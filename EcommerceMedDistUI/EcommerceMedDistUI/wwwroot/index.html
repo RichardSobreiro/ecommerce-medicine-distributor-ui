@@ -27,6 +27,29 @@
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+    <script>
+        (function () {
+            window.initializeJsFunctions = {
+                Tooltips: function () {
+                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                        return new bootstrap.Tooltip(tooltipTriggerEl,{
+                            container: 'body',
+                            trigger: 'hover'
+                        })
+                    }) 
+                },
+                HideAllTooltips: function () {
+                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                    tooltipTriggerList.forEach((tooltip) => {
+                        const instance = bootstrap.Tooltip.getInstance(tooltip);
+                        instance.hide();
+                    })
+                }
+            };
+        })();
+    </script>
 </body>
 
 </html>
