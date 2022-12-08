@@ -1,3 +1,4 @@
+using Blazored.LocalStorage;
 using EcommerceMedDistUI;
 using EcommerceMedDistUI.Authentication;
 using EcommerceMedDistUI.Services;
@@ -14,6 +15,8 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<IProducsServices, ProducsServices>();
+builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
+builder.Services.AddBlazoredLocalStorage();
 
 #region Authentication
 builder.Services.AddScoped(typeof(AccountClaimsPrincipalFactory<RemoteUserAccount>), typeof(CustomAccountFactory));

@@ -1,5 +1,6 @@
 ﻿@page "/"
 @page "/comprar"
+@using EcommerceMedDistUI.Utils
 
 <PageTitle>Comprar</PageTitle>
 
@@ -7,6 +8,8 @@
 @inject NavigationManager _navigationManager
 
 @inject IProducsServices _productsService
+@inject IShoppingCartService _cartService
+@inject ILocalStorageService _localStorage
 @inject IJSRuntime JS
 
 <div class="row">
@@ -24,7 +27,7 @@
     </button>
 </div>
 
-@foreach(var product in products)
+@foreach(var product in Products)
 {
     <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
         <div class="col">
@@ -50,7 +53,7 @@
                                 <td>@concentration.SellingPrice R$</td>
                                 <td>
                                     <!-- Negotiation -->
-                                    <button @onclick="@(async (args) => await OpenNegotiationArea(args, product.Id))"
+                                    <button @onclick="@(async (args) => await OpenNegotiationArea(args, product.Id, concentration.ConcentrationValue))"
                                     type="button" class="btn btn-secondary" 
                                     data-bs-toggle="tooltip" data-bs-placement="top" 
                                     title="Digite aqui mesmo o valor que você gostaria de pagar.">
@@ -62,7 +65,8 @@
                                 <td>
                                     <!-- Purchase -->
                                     <span data-bs-toggle="modal" data-bs-target="#addToCartModal">
-                                        <button @onclick="@(async (args) => await AddProductToCart(args, product.Id))"
+                                        <button @onclick="@(async (args) => await OpenModalAddProductToCart(args, 
+                                            product.Id, concentration.ConcentrationValue))"
                                         type="button" class="btn btn-secondary" 
                                         data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" 
                                         title="Adicione o produto ao seu carrinho!">
@@ -89,27 +93,59 @@
 <!-- Modal -->
 <div class="modal fade" id="addToCartModal" data-bs-backdrop="static" data-bs-keyboard="false" 
 tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="addToCartModalLabel">Modal title</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        ...
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
-      </div>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            @if(ProductToBeAddedToCart != null)
+            {
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addToCartModalLabel">Adicionar ao Carrinho</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">@ProductToBeAddedToCart.Name</h4>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Concentração</th>
+                                <th scope="col">Preço</th>
+                                <th scope="col">Quantidade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach(var conceentration in ProductToBeAddedToCart.Concentrations)
+                            {
+                                <tr>
+                                    <td>@conceentration.ConcentrationDescription</td>
+                                    <td>@conceentration.SellingPrice R$</td>
+                                    <td>
+                                        <input @bind="conceentration.Quantity"
+                                        type="number" class="form-control" id="QuantityShoppingCart" aria-describedby="emailHelp">
+                                        <div id="QuantityShoppingCartHelp" class="form-text">Coloque aqui a quantidade</div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button @onclick="@(async (args) => await AddProductToCart(args, ProductToBeAddedToCart))" 
+                    type="button" class="btn btn-primary">Adicionar ao Carrinho</button>
+                </div>
+            }
+        </div>
     </div>
-  </div>
 </div>
 
 @code {
     string? PartialProductName { get; set; }
-    List<ProductVM> products { get; set; } = new();
-    ProductVM ProductToBeAddedToCart { get; set; } = new();
+    List<ProductVM> Products { get; set; } = new();
+    ProductInCartVM ProductToBeAddedToCart { get; set; } = null;
+    decimal OrderTotal { get; set; }
+    public bool IsProcessing { get; set; } = false;
+    private List<ShoppingCartVM> ShoppingCart = new List<ShoppingCartVM>();
 
     public async Task Enter(KeyboardEventArgs e)
     {
@@ -130,7 +166,7 @@ tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
         await JS.InvokeAsync<string>("initializeJsFunctions.HideAllTooltips", null);
         if (ValidateProductsSearch())
         {
-            products = await _productsService.SearchProductByName(PartialProductName);
+            Products = await _productsService.SearchProductByName(PartialProductName);
         }
     }
 
@@ -163,20 +199,97 @@ tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
         return true;
     }
 
-    async Task OpenNegotiationArea(MouseEventArgs args, string? productId)
+    async Task OpenNegotiationArea(MouseEventArgs args, string? productId, double concentrationValue)
     {
         await JS.InvokeAsync<string>("initializeJsFunctions.HideAllTooltips", null);
     }
 
-    async Task AddProductToCart(MouseEventArgs args, string? productId)
+    async Task OpenModalAddProductToCart(MouseEventArgs args, string? productId, double concentrationValue)
     {
         await JS.InvokeAsync<string>("initializeJsFunctions.HideAllTooltips", null);
-        var product = products.FirstOrDefault(p => p.Id == productId);
-        if(product != null)
+        var product = Products.FirstOrDefault(p => p.Id == productId);
+        if (product != null)
         {
-            
+            var productAlreadyInShoppingCart = await _cartService.GetItemInShoppingCart(product.Id);
+            ProductToBeAddedToCart = new();
+            ProductToBeAddedToCart.Id = product.Id;
+            ProductToBeAddedToCart.Name = product.Name;
+            ProductToBeAddedToCart.Description = product.Description;
+            ProductToBeAddedToCart.MeasurementUnitId = product.MeasurementUnitId;
+            var concentration = product.SelectedDrugsConcentrations.FirstOrDefault(c => c.ConcentrationValue == concentrationValue);
+            if (concentration != null)
+            {
+                if(productAlreadyInShoppingCart != null)
+                {
+                    var concentrationAlreadyInShoppingCart = productAlreadyInShoppingCart.ProductInCart.Concentrations.FirstOrDefault(
+                        c => c.ConcentrationValue.CompareTo(concentration.ConcentrationValue) == 0);
+                    if(concentrationAlreadyInShoppingCart != null)
+                    {
+                        ProductToBeAddedToCart.Concentrations = productAlreadyInShoppingCart.ProductInCart.Concentrations;
+                    }
+                    else
+                    {
+                        ProductToBeAddedToCart.Concentrations.AddRange(productAlreadyInShoppingCart.ProductInCart.Concentrations);
+                        ProductToBeAddedToCart.Concentrations.Add(new ConcentrationInCartVM()
+                        {
+                            ConcentrationValue = concentration.ConcentrationValue,
+                            ConcentrationDescription = concentration.ConcentrationDescription,
+                            SellingPrice = concentration.SellingPrice,
+                            Quantity = 0
+                        });
+                    }
+                }
+                else
+                {
+                    ProductToBeAddedToCart.Concentrations.Add(new ConcentrationInCartVM()
+                    {
+                        ConcentrationValue = concentration.ConcentrationValue,
+                        ConcentrationDescription = concentration.ConcentrationDescription,
+                        SellingPrice = concentration.SellingPrice,
+                        Quantity = 0
+                    });
+                }
+            }
+            else
+            {
+                ProductToBeAddedToCart = null;
+                var message = new NotificationMessage 
+                { 
+                    Severity = NotificationSeverity.Error, 
+                    Summary = "Campos Inválidos", 
+                    Detail = "Valor de concentração não encontrado!", 
+                    Duration = 5000 
+                };
+                _notificationService.Notify(message);
+            }
         }
     }
+
+    async Task AddProductToCart(MouseEventArgs args, ProductInCartVM productToBeAddedToCart)
+    {
+        await _cartService.IncrementCart(new ShoppingCartVM()
+        {
+            ShoppingCartId = "",
+            ProductInCart = ProductToBeAddedToCart
+        });
+        ProductToBeAddedToCart = null;
+        StateHasChanged();
+        await LoadCart();
+        await JS.InvokeAsync<string>("initializeJsFunctions.HideAddToShoppingCartModal", null);
+    }
+
+    private async Task LoadCart()
+    {
+        OrderTotal = 0;
+        ShoppingCart = await _localStorage.GetItemAsync<List<ShoppingCartVM>>(Constants.ShoppingCart);
+        foreach(var shoppingCartItem in ShoppingCart)
+        {
+            foreach(var concentration in shoppingCartItem.ProductInCart.Concentrations)
+            {
+                OrderTotal += concentration.SellingPrice * concentration.Quantity;
+            }
+        }
+	}
 
     async Task ChatWithOperator(MouseEventArgs args)
     {
