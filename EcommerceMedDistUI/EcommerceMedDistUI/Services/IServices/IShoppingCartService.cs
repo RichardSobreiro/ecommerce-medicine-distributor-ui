@@ -8,5 +8,6 @@ namespace EcommerceMedDistUI.Services.IServices
         Task DecrementCart(ShoppingCartVM shoppingCart);
         Task IncrementCart(ShoppingCartVM shoppingCart);
         Task<ShoppingCartVM> GetItemInShoppingCart(string productId);
+        Task UpdateShoppingCart(List<ShoppingCartVM> shoppingCart);
     }
 }

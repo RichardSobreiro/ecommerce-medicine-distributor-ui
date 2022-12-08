@@ -1,0 +1,78 @@
+﻿@inject IJSRuntime JS
+@inject IShoppingCartService _cartService
+
+<!-- Modal Add To Cart -->
+<div class="modal fade" id="addToCartModal" data-bs-backdrop="static" data-bs-keyboard="false" 
+tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            @if(ProductToBeAddedToCart != null)
+            {
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addToCartModalLabel">Adicionar ao Carrinho</h1>
+                    <button @onclick="@(async (args) => await OnClose.InvokeAsync(true))"
+                    type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">@ProductToBeAddedToCart.Name</h4>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Concentração</th>
+                                <th scope="col">Preço</th>
+                                <th scope="col">Quantidade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach(var conceentration in ProductToBeAddedToCart.Concentrations)
+                            {
+                                <tr>
+                                    <td>@conceentration.ConcentrationDescription</td>
+                                    <td>@conceentration.SellingPrice R$</td>
+                                    <td>
+                                        <input @bind="conceentration.Quantity"
+                                        type="number" class="form-control" id="QuantityShoppingCart" aria-describedby="emailHelp">
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button @onclick="@(async (args) => await OnClose.InvokeAsync(true))"
+                    type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button @onclick="@(async (args) => await AddProductToCart(args, ProductToBeAddedToCart))" 
+                    type="button" class="btn btn-primary">Adicionar ao Carrinho</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ProductInCartVM ProductToBeAddedToCart { get; set; } = null;
+    [Parameter]
+    public EventCallback<bool> OnClose { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JS.InvokeAsync<string>("initializeJsFunctions.ShowAddToShoppingCartModal", null);
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    async Task AddProductToCart(MouseEventArgs args, ProductInCartVM productToBeAddedToCart)
+    {
+        await _cartService.IncrementCart(new ShoppingCartVM()
+        {
+            ShoppingCartId = "",
+            ProductInCart = ProductToBeAddedToCart
+        });
+        ProductToBeAddedToCart = null;
+        StateHasChanged();
+        await JS.InvokeAsync<string>("initializeJsFunctions.HideAddToShoppingCartModal", null);
+        await OnClose.InvokeAsync(true);
+    }
+}

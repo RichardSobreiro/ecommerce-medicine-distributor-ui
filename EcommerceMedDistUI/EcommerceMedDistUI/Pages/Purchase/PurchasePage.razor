@@ -53,18 +53,21 @@
                                 <td>@concentration.SellingPrice R$</td>
                                 <td>
                                     <!-- Negotiation -->
-                                    <button @onclick="@(async (args) => await OpenNegotiationArea(args, product.Id, concentration.ConcentrationValue))"
-                                    type="button" class="btn btn-secondary" 
-                                    data-bs-toggle="tooltip" data-bs-placement="top" 
-                                    title="Digite aqui mesmo o valor que você gostaria de pagar.">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
-                                            <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7Zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path>
-                                        </svg>
-                                    </button>
+                                    <span>
+                                        <button @onclick="@(async (args) => await OpenNegotiationArea(args, 
+                                            product.Id, concentration.ConcentrationValue))"
+                                        type="button" class="btn btn-secondary" 
+                                        data-bs-toggle="tooltip" data-bs-placement="top" 
+                                        title="Digite aqui mesmo o valor que você gostaria de pagar.">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
+                                                <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7Zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path>
+                                            </svg>
+                                        </button>
+                                    </span>
                                 </td>
                                 <td>
                                     <!-- Purchase -->
-                                    <span data-bs-toggle="modal" data-bs-target="#addToCartModal">
+                                    <span>
                                         <button @onclick="@(async (args) => await OpenModalAddProductToCart(args, 
                                             product.Id, concentration.ConcentrationValue))"
                                         type="button" class="btn btn-secondary" 
@@ -90,56 +93,19 @@
     </div>
 }
 
-<!-- Modal -->
-<div class="modal fade" id="addToCartModal" data-bs-backdrop="static" data-bs-keyboard="false" 
-tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            @if(ProductToBeAddedToCart != null)
-            {
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="addToCartModalLabel">Adicionar ao Carrinho</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="card-header py-3">
-                        <h4 class="my-0 fw-normal">@ProductToBeAddedToCart.Name</h4>
-                    </div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Concentração</th>
-                                <th scope="col">Preço</th>
-                                <th scope="col">Quantidade</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach(var conceentration in ProductToBeAddedToCart.Concentrations)
-                            {
-                                <tr>
-                                    <td>@conceentration.ConcentrationDescription</td>
-                                    <td>@conceentration.SellingPrice R$</td>
-                                    <td>
-                                        <input @bind="conceentration.Quantity"
-                                        type="number" class="form-control" id="QuantityShoppingCart" aria-describedby="emailHelp">
-                                        <div id="QuantityShoppingCartHelp" class="form-text">Coloque aqui a quantidade</div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button @onclick="@(async (args) => await AddProductToCart(args, ProductToBeAddedToCart))" 
-                    type="button" class="btn btn-primary">Adicionar ao Carrinho</button>
-                </div>
-            }
-        </div>
-    </div>
-</div>
+@if (OpenAddToCartDialog)
+{
+    <AddToShoppingCartDialog ProductToBeAddedToCart="@ProductToBeAddedToCart" OnClose="@OnCloseDialogAddProductToCart"></AddToShoppingCartDialog>
+}
+
+@if (OpenShoppingCartDialog)
+{
+    <ShoppingCartDialog OnClose="@OnCloseDialogShoppingCart"></ShoppingCartDialog>
+}
 
 @code {
+    bool OpenAddToCartDialog { get; set; } = false;
+    bool OpenShoppingCartDialog { get; set; } = false;
     string? PartialProductName { get; set; }
     List<ProductVM> Products { get; set; } = new();
     ProductInCartVM ProductToBeAddedToCart { get; set; } = null;
@@ -249,6 +215,7 @@ tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
                         Quantity = 0
                     });
                 }
+                OpenAddToCartDialog = true;
             }
             else
             {
@@ -265,34 +232,28 @@ tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
         }
     }
 
-    async Task AddProductToCart(MouseEventArgs args, ProductInCartVM productToBeAddedToCart)
+    async Task OnCloseDialogAddProductToCart()
     {
-        await _cartService.IncrementCart(new ShoppingCartVM()
-        {
-            ShoppingCartId = "",
-            ProductInCart = ProductToBeAddedToCart
-        });
+        OpenAddToCartDialog = false;
         ProductToBeAddedToCart = null;
-        StateHasChanged();
-        await LoadCart();
-        await JS.InvokeAsync<string>("initializeJsFunctions.HideAddToShoppingCartModal", null);
     }
 
-    private async Task LoadCart()
+    async Task ShowShoppingCartDialog(MouseEventArgs args)
     {
-        OrderTotal = 0;
-        ShoppingCart = await _localStorage.GetItemAsync<List<ShoppingCartVM>>(Constants.ShoppingCart);
-        foreach(var shoppingCartItem in ShoppingCart)
-        {
-            foreach(var concentration in shoppingCartItem.ProductInCart.Concentrations)
-            {
-                OrderTotal += concentration.SellingPrice * concentration.Quantity;
-            }
-        }
-	}
+        await JS.InvokeAsync<string>("initializeJsFunctions.HideAllTooltips", null);
+        OpenShoppingCartDialog = true;
+    }
+
+    async Task OnCloseDialogShoppingCart()
+    {
+        OpenShoppingCartDialog = false;
+        ProductToBeAddedToCart = null;
+    }
 
     async Task ChatWithOperator(MouseEventArgs args)
     {
         await JS.InvokeAsync<string>("initializeJsFunctions.HideAllTooltips", null);
+
+        await JS.InvokeAsync<string>("initializeJsFunctions.HideAddToShoppingCartModal", null);
     }
 }

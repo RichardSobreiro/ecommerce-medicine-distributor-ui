@@ -78,5 +78,11 @@ namespace EcommerceMedDistUI.Services
             await _localStorage.SetItemAsync(Constants.ShoppingCart, cart);
             OnChange.Invoke();
         }
+
+        public async Task UpdateShoppingCart(List<ShoppingCartVM> shoppingCart)
+        {
+            await _localStorage.SetItemAsync(Constants.ShoppingCart, shoppingCart);
+            OnChange.Invoke();
+        }
     }
 }

@@ -48,7 +48,24 @@
                     })
                 },
                 HideAddToShoppingCartModal: function () {
-                    $('#addToCartModal').modal('hide');
+                    if ($('#addToCartModal').length) {
+                        $('#addToCartModal').modal('hide');
+                    }
+                },
+                ShowAddToShoppingCartModal: function () {
+                    if ($('#addToCartModal').length) {
+                        $('#addToCartModal').modal('show');
+                    }
+                },
+                HideShoppingCartModal: function () {
+                    if ($('#shoppingCartModal').length) {
+                        $('#shoppingCartModal').modal('hide');
+                    }
+                },
+                ShowShoppingCartModal: function () {
+                    if ($('#shoppingCartModal').length) {
+                        $('#shoppingCartModal').modal('show');
+                    }
                 }
             };
         })();
