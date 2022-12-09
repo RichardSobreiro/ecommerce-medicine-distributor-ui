@@ -2,8 +2,7 @@
 @inject IShoppingCartService _cartService
 @inject ILocalStorageService _localStorage
 @inject NotificationService _notificationService
-
-@inject AuthenticationStateProvider AuthenticationStateProvider  
+@inject NavigationManager _navigationManager
 
 <!-- Modal Shopping Cart -->
 <div class="modal fade" id="shoppingCartModal" data-bs-backdrop="static" data-bs-keyboard="false" 
@@ -101,8 +100,7 @@ tabindex="-1" aria-labelledby="shoppingCartModalLabel" aria-hidden="true">
 
     async Task NavigateToPayment(MouseEventArgs args)
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();  
-        var user = authState.User; 
+        _navigationManager.NavigateTo("pagamento");
         await CloseModal(args);
     }
 
