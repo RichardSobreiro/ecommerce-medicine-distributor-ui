@@ -16,7 +16,10 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<IProducsServices, ProducsServices>();
 builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
+builder.Services.AddScoped<IPaymentServices, PaymentServices>();
 builder.Services.AddBlazoredLocalStorage();
+
+builder.Services.AddSingleton<StateContainer>();
 
 #region Authentication
 builder.Services.AddScoped(typeof(AccountClaimsPrincipalFactory<RemoteUserAccount>), typeof(CustomAccountFactory));

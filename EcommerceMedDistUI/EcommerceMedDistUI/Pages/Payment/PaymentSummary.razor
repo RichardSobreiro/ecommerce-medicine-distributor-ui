@@ -1,4 +1,4 @@
-﻿@page "/pagamento"
+﻿@page "/pagamento/resumo"
 @using System.Security.Claims
 @using EcommerceMedDistUI.ViewModels.CEP
 @using EcommerceMedDistUI.ViewModels.Payment
@@ -60,19 +60,9 @@
             <h4 class="mb-3">Método de Pagamento</h4>
             <div class="my-3">
                 <div class="form-check">
-                    <input @bind="PaymentVM.Boleto" id="boleto" name="paymentMethod" type="checkbox" 
+                    <input disabled @bind="PaymentVM.Boleto" id="boleto" name="paymentMethod" type="checkbox" 
                         class="form-check-input" required="">
                     <label class="form-check-label" for="boleto">Boleto</label>
-                </div>
-                <div class="form-check">
-                    <input @bind="PaymentVM.CreditCard" disabled id="creditCard" name="paymentMethod" type="checkbox" 
-                        class="form-check-input" required="">
-                    <label class="form-check-label" for="creditCard">Cartão de Crédito <span class="text-muted">(Em breve)</span></label>
-                </div>
-                <div class="form-check">
-                    <input @bind="PaymentVM.Pix" disabled id="pix" name="paymentMethod" type="checkbox" 
-                        class="form-check-input" required="">
-                    <label class="form-check-label" for="pix">PIX <span class="text-muted">(Em breve)</span></label>
                 </div>
             </div>
             <h4 class="mb-3">Endereço de Cobrança</h4>
@@ -81,8 +71,7 @@
                 <div class="row g-3">
                     <div class="col-sm-6">
                         <label for="cpfCnpj" class="form-label">CNPJ ou CPF</label>
-                        <input value="@(PaymentVM.CpfCnpj)" @onchange="(args) => OnChangeCpfCnpj(args)" type="text" 
-                            class="@(cpfCnpjCssClasses)" id="cpfCnpj" placeholder="" required>
+                        <input disabled value="@(PaymentVM.CpfCnpj)" type="text" class="@(cpfCnpjCssClasses)" id="cpfCnpj" required>
                         <div class="invalid-feedback">
                             Digite um número de documento válido.
                         </div>
@@ -92,7 +81,7 @@
                 <div class="row">
                     <div class="col-sm-6">
                         <label for="firstName" class="form-label">Nome no Boleto</label>
-                        <input value="@(PaymentVM.Name)" @onchange="(args) => OnChangeNameInDocument(args)" type="text" 
+                        <input disabled value="@(PaymentVM.Name)" type="text" 
                             class="@(nameInDocumentCssClasses)" id="firstName" placeholder="" required="">
                         <div class="invalid-feedback">
                             Digite um nome válido.
@@ -103,8 +92,7 @@
                 <div class="row">
                     <div class="col-sm-3">
                         <label for="zip" class="form-label">CEP</label>
-                        <input value="@(PaymentVM.BillingAddressVM.Cep)" 
-                            @onchange="@(async (args) => await GetCepInfoBillingAddress(args))" type="string" 
+                        <input disabled value="@(PaymentVM.BillingAddressVM.Cep)" type="string" 
                             class="@(cepBillingAddressCssClasses)" id="zip" placeholder="" required="">
                         <div class="invalid-feedback">
                         Informe um CEP válido.
@@ -116,8 +104,7 @@
 
                     <div class="col-sm-12">
                         <label for="email" class="form-label">E-mail <span class="text-muted">(E-mail que receberá o boleto)</span></label>
-                        <input value="@(PaymentVM.Email)"
-                            @onchange="@((args) => OnChangeEmail(args))" type="email" 
+                        <input disabled value="@(PaymentVM.Email)" type="email" 
                             class="@(emailCssClasses)" id="email" placeholder="email@exemplo.com">
                         <div class="invalid-feedback">
                         E-mail onde as informações relativas a compra serão enviadas.
@@ -132,8 +119,8 @@
 
                     <div class="col-sm-4">
                         <label for="numeroBillingAddress" class="form-label">Número</label>
-                        <input value="@(PaymentVM.BillingAddressVM.Number)"
-                            @onchange="(args) => OnChangeBillingAddressNumber(args)" type="text" class="@(numberBillingAddressCssClasses)" 
+                        <input disabled value="@(PaymentVM.BillingAddressVM.Number)" 
+                            type="text" class="@(numberBillingAddressCssClasses)" 
                             id="numeroBillingAddress" placeholder="" required="">
                         <div class="invalid-feedback">
                         Por favor, informe um número de rua válido.
@@ -142,7 +129,7 @@
 
                     <div class="col-sm-6">
                         <label for="complementBillingAddress" class="form-label">Complemento <span class="text-muted">(Optional)</span></label>
-                        <input @bind="PaymentVM.BillingAddressVM.Complement" type="text" class="form-control" 
+                        <input disabled @bind="PaymentVM.BillingAddressVM.Complement" type="text" class="form-control" 
                             id="complementBillingAddress" placeholder="Apart...">
                     </div>
 
@@ -168,7 +155,8 @@
                 <hr class="my-4">
 
                 <div class="form-check">
-                    <input @bind="PaymentVM.BillingEqualShippingAddress" type="checkbox" class="form-check-input" id="same-address" />
+                    <input disabled @bind="PaymentVM.BillingEqualShippingAddress" type="checkbox" 
+                        class="form-check-input" id="same-address" />
                     <label class="form-check-label" for="same-address">Endereço de cobrança é igual ao endereço de entrega</label>
                 </div>
 
@@ -180,7 +168,7 @@
                     <div class="row">
                         <div class="col-sm-3">
                             <label for="cepShippimentAddress" class="form-label">CEP</label>
-                            <input @onchange="@(async (args) => await GetCepInfoShippimentAddress(args))" type="number" 
+                            <input disabled value="@(PaymentVM.ShippimentAddressVM.Cep)" type="number" 
                                 class="@(cepShippimentAddressCssClasses)" id="cepShippimentAddress" required="">
                             <div class="invalid-feedback">
                             Informe um CEP válido.
@@ -196,8 +184,8 @@
 
                         <div class="col-sm-4">
                             <label for="numberShippimentAddress" class="form-label">Número</label>
-                            <input @bind="PaymentVM.ShippimentAddressVM.Number" type="text" class="@(numberShippimentAddressCssClasses)" 
-                                id="numberShippimentAddress" required="">
+                            <input disabled @bind="PaymentVM.ShippimentAddressVM.Number" type="text" 
+                                class="@(numberShippimentAddressCssClasses)" id="numberShippimentAddress" required="">
                             <div class="invalid-feedback">
                             Por favor, informe um número de rua válido.
                             </div>
@@ -205,8 +193,8 @@
 
                         <div class="col-sm-6">
                             <label for="complementShippimentAddress" class="form-label">Complemento <span class="text-muted">(Optional)</span></label>
-                            <input @bind="PaymentVM.ShippimentAddressVM.Complement" type="text" class="form-control" placeholder="Apart..."
-                                id="complementShippimentAddress">
+                            <input disabled @bind="PaymentVM.ShippimentAddressVM.Complement" type="text" 
+                                class="form-control" placeholder="Apart..." id="complementShippimentAddress">
                         </div>
 
                         <div class="col-sm-6">
@@ -230,10 +218,10 @@
 
                     <hr class="my-4">
             }
-                <button @onclick="(args) => NavigateToPurchase()" class="w-40 btn btn-secondary btn-lg">
-                    Continuar Comprando
+                <button @onclick="(args) => NavigateToPaymentCreation()" class="btn btn-secondary btn-lg">
+                    Voltar
                 </button>
-                <button @onclick="(args) => NavigateToPaymentSummary()" class="w-60 btn btn-primary btn-lg">
+                <button @onclick="(args) => CreateNewPayment(args)" class="btn btn-primary btn-lg">
                     Continuar para a confirmação
                 </button>
             </form>
@@ -254,11 +242,12 @@ else
 @code {
     [Parameter]
     public bool? IsAuthenticated { get; set; } = false;
+    [Parameter]
+    public PaymentVM PaymentVM { get; set; }
     ClaimsPrincipal User { get; set; } = new();
     bool cpfCnpjIsValid { get; set; } = true;
     bool cepBillingAddressIsValid { get; set; } = false;
     bool cepShippimentAddressIsValid { get; set; } = false;
-    PaymentVM PaymentVM { get; set; } = new();
 
     string cssValidClasses { get; set; } = "form-control is-valid";
     string cssInValidClasses { get; set; } = "form-control is-invalid";
@@ -272,173 +261,54 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();  
-        User = authState.User;
-        if (User.Identities.Any() && User.Identities.ElementAt(0).IsAuthenticated)
-        {
-            IsAuthenticated = true;
-        }
-        if(_stateContainer.Property != null)
-        {
-            PaymentVM = _stateContainer.Property;
-        }
+        PaymentVM = _stateContainer.Property;
         await base.OnInitializedAsync();
     }
 
-    private void BeginSignIn()
+    void NavigateToPaymentCreation()
     {
-        _navigationManager.NavigateTo("authentication/login");
+        _navigationManager.NavigateTo("/pagamento");
     }
 
-    async Task GetCepInfoBillingAddress(Microsoft.AspNetCore.Components.ChangeEventArgs args)
+    async Task CreateNewPayment(MouseEventArgs args)
     {
-        using(HttpClient httpClient = new())
+        try
         {
-            try
+            if (Validate())
             {
-                httpClient.DefaultRequestHeaders.Accept.Add(
-                new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                HttpResponseMessage response = await httpClient.GetAsync($"https://viacep.com.br/ws/{args.Value}/json");
-                if (response.IsSuccessStatusCode)
-                {
-                    var viaCepResponse = await response.Content.ReadFromJsonAsync<ViaCepResponse>();
-                    if(viaCepResponse != null)
-                    {
-                        PaymentVM.BillingAddressVM.Cep = viaCepResponse.cep;
-                        PaymentVM.BillingAddressVM.Street = viaCepResponse.logradouro;
-                        PaymentVM.BillingAddressVM.Complement = viaCepResponse.complemento;
-                        PaymentVM.BillingAddressVM.City = viaCepResponse.localidade;
-                        PaymentVM.BillingAddressVM.District = viaCepResponse.bairro;
-                        PaymentVM.BillingAddressVM.State = viaCepResponse.uf;
-                        cepBillingAddressCssClasses = cssValidClasses;
-                        cepBillingAddressIsValid = true;
-                    }
-                    else
-                    {
-                        cepBillingAddressCssClasses = cssInValidClasses;
-                        cepBillingAddressIsValid = false;
-                        var message = new NotificationMessage 
-                        { 
-                            Severity = NotificationSeverity.Warning, 
-                            Summary = "CEP não encontrado", 
-                            Detail = "", 
-                            Duration = 5000 
-                        };
-                        _notificationService.Notify(message);
-                    }
-                }
-                else
-                {
-                    cepBillingAddressCssClasses = cssInValidClasses;
-                    cepBillingAddressIsValid = false;
-                }
+                await _paymentServices.CreateNewPayment(PaymentVM);
+                var message = new NotificationMessage 
+                { 
+                    Severity = NotificationSeverity.Success, 
+                    Summary = "Boleto criado com sucesso!", 
+                    Detail = $"", 
+                    Duration = 8000 
+                };
+                _notificationService.Notify(message);
             }
-            catch(Exception e)
+            else
             {
-                cepBillingAddressCssClasses = cssInValidClasses;
-                cepBillingAddressIsValid = false;
+                var message = new NotificationMessage 
+                { 
+                    Severity = NotificationSeverity.Error, 
+                    Summary = "Existem erros nos dados de pagamento!", 
+                    Detail = "", 
+                    Duration = 8000 
+                };
+                _notificationService.Notify(message);
             }
         }
-    }
-
-    async Task GetCepInfoShippimentAddress(Microsoft.AspNetCore.Components.ChangeEventArgs args)
-    {
-        using(HttpClient httpClient = new())
-        {
-            try
-            {
-                httpClient.DefaultRequestHeaders.Accept.Add(
-                    new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                HttpResponseMessage response = await httpClient.GetAsync($"https://viacep.com.br/ws/{args.Value}/json");
-                if (response.IsSuccessStatusCode)
-                {
-                    var viaCepResponse = await response.Content.ReadFromJsonAsync<ViaCepResponse>();
-                    if(viaCepResponse != null)
-                    {
-                        PaymentVM.ShippimentAddressVM.Cep = viaCepResponse.cep;
-                        PaymentVM.ShippimentAddressVM.Street = viaCepResponse.logradouro;
-                        PaymentVM.ShippimentAddressVM.Complement = viaCepResponse.complemento;
-                        PaymentVM.ShippimentAddressVM.City = viaCepResponse.localidade;
-                        PaymentVM.ShippimentAddressVM.District = viaCepResponse.bairro;
-                        PaymentVM.ShippimentAddressVM.State = viaCepResponse.uf;
-                        cepShippimentAddressCssClasses = cssValidClasses;
-                        cepShippimentAddressIsValid = true;
-                    }
-                    else
-                    {
-                        cepShippimentAddressCssClasses = cssInValidClasses;
-                        cepShippimentAddressIsValid = false;
-                        var message = new NotificationMessage 
-                        { 
-                            Severity = NotificationSeverity.Warning, 
-                            Summary = "CEP não encontrado", 
-                            Detail = "", 
-                            Duration = 5000 
-                        };
-                        _notificationService.Notify(message);
-                    }
-                }
-                else
-                {
-                    cepShippimentAddressCssClasses = cssInValidClasses;
-                    cepShippimentAddressIsValid = false;
-                }                
-            }
-            catch(Exception e)
-            {
-                cepShippimentAddressCssClasses = cssInValidClasses;
-                cepShippimentAddressIsValid = false;
-            }
-        }
-    }
-
-    bool OnChangeCpfCnpj(Microsoft.AspNetCore.Components.ChangeEventArgs args)
-    {
-        string cpfCnpj = args.Value != null ? (string)args.Value : "";
-        return ValidateDocument(cpfCnpj);
-    }
-
-    bool OnChangeNameInDocument(Microsoft.AspNetCore.Components.ChangeEventArgs args)
-    {
-        PaymentVM.Name = args.Value != null ? (string)args.Value : "";
-        return ValidateNameInDocument();
-    }
-
-    bool OnChangeEmail(Microsoft.AspNetCore.Components.ChangeEventArgs args)
-    {
-        PaymentVM.Email = args.Value != null ? (string)args.Value : "";
-        return ValidateEmail();
-    }
-
-    bool OnChangeBillingAddressNumber(Microsoft.AspNetCore.Components.ChangeEventArgs args)
-    {
-        PaymentVM.BillingAddressVM.Number = args.Value != null ? (string)args.Value : "";
-        return ValidateBillingAddressNumber();
-    }
-
-    void NavigateToPaymentSummary()
-    {
-        if (Validate())
-        {
-            _stateContainer.Property = PaymentVM;
-            _navigationManager.NavigateTo("/pagamento/resumo");
-        }
-        else
+        catch(Exception e)
         {
             var message = new NotificationMessage 
             { 
                 Severity = NotificationSeverity.Error, 
-                Summary = "Existem erros nos dados de pagamento!", 
-                Detail = "", 
+                Summary = "Erro ao processar o pagamento!", 
+                Detail = e.Message, 
                 Duration = 8000 
             };
             _notificationService.Notify(message);
         }
-    }
-
-    void NavigateToPurchase()
-    {
-        _navigationManager.NavigateTo("");
     }
 
     bool Validate()
