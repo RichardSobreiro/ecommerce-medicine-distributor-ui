@@ -1,0 +1,5 @@
+version: 3
+services:
+  keycloak:
+    image: acreastus2meddistauthnz.azurecr.io/richardsobreiro/ecommerce-medicine-distributor-ui:latest
+    restart: always

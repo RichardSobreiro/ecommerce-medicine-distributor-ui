@@ -18,16 +18,16 @@
         <div class="col-md-5 col-lg-4 order-md-last">
             <h4 class="d-flex justify-content-between align-items-center mb-3">
                 <span class="text-primary">Seu Carrinho</span>
-                <span class="badge bg-primary rounded-pill">3</span>
+                <span class="badge bg-primary rounded-pill">@(ShoppingCart != null ? ShoppingCart.ProductsInCart.Sum(p => p.Concentrations.Count()) : 0)</span>
             </h4>
             <ul class="list-group mb-3">
-                @foreach (var shoppingCart in ShoppingCarts)
+                @foreach (var productInCart in ShoppingCart.ProductsInCart)
                 {
-                    @foreach (var concentrationInCartVM in shoppingCart.ProductInCart.Concentrations)
+                    @foreach (var concentrationInCartVM in productInCart.Concentrations)
                     {
                         <li class="list-group-item d-flex justify-content-between lh-sm">
                             <div>
-                                <h6 class="my-0">@shoppingCart.ProductInCart.Name</h6>
+                                <h6 class="my-0">@productInCart.Name</h6>
                                 <small class="text-muted">@concentrationInCartVM.ConcentrationDescription</small>
                             </div>
                             <span class="text-muted">@($"{concentrationInCartVM.SellingPrice * concentrationInCartVM.Quantity} R$")</span>
@@ -37,7 +37,7 @@
                 <li class="list-group-item d-flex justify-content-between">
                     <span>Total</span>
                     <strong>
-                        @($"{(ShoppingCarts != null ? ShoppingCarts.Sum(s => s.ProductInCart.Concentrations.Sum(c => c.SellingPrice)) : 0)} R$")
+                        @($"{(ShoppingCart != null ? ShoppingCart.ProductsInCart.Sum(s => s.Concentrations.Sum(c => c.SellingPrice * (decimal)c.ConcentrationValue)) : 0)} R$")
                     </strong>
                 </li>
             </ul>
@@ -80,7 +80,7 @@
                 <div class="row">
                     <div class="col-sm-3">
                         <label for="zip" class="form-label">CEP</label>
-                        <input disabled value="@(PaymentVM.BillingAddressVM.Cep)" type="string" 
+                        <input disabled value="@(PaymentVM.BillingAddress.Cep)" type="string" 
                             class="@(cepBillingAddressCssClasses)" id="zip" placeholder="" required="">
                         <div class="invalid-feedback">
                         Informe um CEP válido.
@@ -101,13 +101,13 @@
 
                     <div class="col-sm-8">
                         <label for="streetBillingAddress" class="form-label">Rua</label>
-                        <input disabled @bind="PaymentVM.BillingAddressVM.Street" type="text" class="form-control" 
+                        <input disabled @bind="PaymentVM.BillingAddress.Street" type="text" class="form-control" 
                             id="streetBillingAddress" placeholder="" required="">
                     </div>
 
                     <div class="col-sm-4">
                         <label for="numeroBillingAddress" class="form-label">Número</label>
-                        <input disabled value="@(PaymentVM.BillingAddressVM.Number)" 
+                        <input disabled value="@(PaymentVM.BillingAddress.Number)" 
                             type="text" class="@(numberBillingAddressCssClasses)" 
                             id="numeroBillingAddress" placeholder="" required="">
                         <div class="invalid-feedback">
@@ -117,25 +117,25 @@
 
                     <div class="col-sm-6">
                         <label for="complementBillingAddress" class="form-label">Complemento <span class="text-muted">(Optional)</span></label>
-                        <input disabled @bind="PaymentVM.BillingAddressVM.Complement" type="text" class="form-control" 
+                        <input disabled @bind="PaymentVM.BillingAddress.Complement" type="text" class="form-control" 
                             id="complementBillingAddress" placeholder="Apart...">
                     </div>
 
                     <div class="col-sm-6">
                         <label for="districtBillingAddress" class="form-label">Bairro</label>
-                        <input disabled @bind="PaymentVM.BillingAddressVM.District" type="text" class="form-control" 
+                        <input disabled @bind="PaymentVM.BillingAddress.District" type="text" class="form-control" 
                             id="districtBillingAddress" placeholder="">
                     </div>
 
                     <div class="col-sm-4">
                         <label for="cityBillingAddress" class="form-label">Cidade</label>
-                        <input disabled @bind="PaymentVM.BillingAddressVM.City" type="text" class="form-control" 
+                        <input disabled @bind="PaymentVM.BillingAddress.City" type="text" class="form-control" 
                             id="cityBillingAddress" placeholder="" required=""/>
                     </div>
 
                     <div class="col-sm-4">
                         <label for="stateBillingAddress" class="form-label">Estado</label>
-                        <input disabled @bind="PaymentVM.BillingAddressVM.State" type="text" class="form-control" 
+                        <input disabled @bind="PaymentVM.BillingAddress.State" type="text" class="form-control" 
                             id="BillingAddress" placeholder="" required=""/>
                     </div>
                 </div>
@@ -156,7 +156,7 @@
                     <div class="row">
                         <div class="col-sm-3">
                             <label for="cepShippimentAddress" class="form-label">CEP</label>
-                            <input disabled value="@(PaymentVM.ShippimentAddressVM.Cep)" type="number" 
+                            <input disabled value="@(PaymentVM.ShippimentAddress.Cep)" type="number" 
                                 class="@(cepShippimentAddressCssClasses)" id="cepShippimentAddress" required="">
                             <div class="invalid-feedback">
                             Informe um CEP válido.
@@ -166,13 +166,13 @@
                     <div class="row">
                         <div class="col-sm-8">
                             <label for="streetShippimentAddress" class="form-label">Rua</label>
-                            <input disabled @bind="PaymentVM.ShippimentAddressVM.Street" type="text" class="form-control" 
+                            <input disabled @bind="PaymentVM.ShippimentAddress.Street" type="text" class="form-control" 
                                 id="streetShippimentAddress" required="">
                         </div>
 
                         <div class="col-sm-4">
                             <label for="numberShippimentAddress" class="form-label">Número</label>
-                            <input disabled @bind="PaymentVM.ShippimentAddressVM.Number" type="text" 
+                            <input disabled @bind="PaymentVM.ShippimentAddress.Number" type="text" 
                                 class="@(numberShippimentAddressCssClasses)" id="numberShippimentAddress" required="">
                             <div class="invalid-feedback">
                             Por favor, informe um número de rua válido.
@@ -181,25 +181,25 @@
 
                         <div class="col-sm-6">
                             <label for="complementShippimentAddress" class="form-label">Complemento <span class="text-muted">(Optional)</span></label>
-                            <input disabled @bind="PaymentVM.ShippimentAddressVM.Complement" type="text" 
+                            <input disabled @bind="PaymentVM.ShippimentAddress.Complement" type="text" 
                                 class="form-control" placeholder="Apart..." id="complementShippimentAddress">
                         </div>
 
                         <div class="col-sm-6">
                             <label for="districtShippimentAddress" class="form-label">Bairro</label>
-                            <input disabled @bind="PaymentVM.ShippimentAddressVM.District" type="text" class="form-control" 
+                            <input disabled @bind="PaymentVM.ShippimentAddress.District" type="text" class="form-control" 
                                 id="districtShippimentAddress">
                         </div>
 
                         <div class="col-sm-4">
                             <label for="cityShippimentAddress" class="form-label">Cidade</label>
-                            <input disabled @bind="PaymentVM.ShippimentAddressVM.City" type="text" class="form-control" 
+                            <input disabled @bind="PaymentVM.ShippimentAddress.City" type="text" class="form-control" 
                                 id="cityShippimentAddress" required=""/>
                         </div>
 
                         <div class="col-sm-4">
                             <label for="stateShippimentAddress" class="form-label">Estado</label>
-                            <input disabled @bind="PaymentVM.ShippimentAddressVM.State" type="text" class="form-control" 
+                            <input disabled @bind="PaymentVM.ShippimentAddress.State" type="text" class="form-control" 
                                 id="stateShippimentAddress" required=""/>
                         </div>
                     </div>
@@ -232,7 +232,7 @@ else
     public bool? IsAuthenticated { get; set; } = false;
     [Parameter]
     public PaymentVM PaymentVM { get; set; }
-    List<ShoppingCartVM> ShoppingCarts { get; set; } = new();
+    ShoppingCartVM ShoppingCart { get; set; } = new();
     ClaimsPrincipal User { get; set; } = new();
     bool cpfCnpjIsValid { get; set; } = true;
     bool cepBillingAddressIsValid { get; set; } = false;
@@ -251,7 +251,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         PaymentVM = _stateContainer.Property;
-        ShoppingCarts = await _localStorage.GetItemAsync<List<ShoppingCartVM>>(Constants.ShoppingCart);
+        ShoppingCart = await _localStorage.GetItemAsync<ShoppingCartVM>(Constants.ShoppingCart);
         await base.OnInitializedAsync();
     }
 
@@ -317,7 +317,7 @@ else
         {
             return true;
         }
-        if (string.IsNullOrEmpty(PaymentVM.ShippimentAddressVM.Number))
+        if (string.IsNullOrEmpty(PaymentVM.ShippimentAddress.Number))
         {
             numberShippimentAddressCssClasses = cssInValidClasses;
             return false;
@@ -328,7 +328,7 @@ else
 
     bool ValidateBillingAddressNumber()
     {
-        if (string.IsNullOrEmpty(PaymentVM.BillingAddressVM.Number))
+        if (string.IsNullOrEmpty(PaymentVM.BillingAddress.Number))
         {
             numberBillingAddressCssClasses = cssInValidClasses;
             return false;

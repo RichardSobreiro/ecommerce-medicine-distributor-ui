@@ -65,11 +65,7 @@ tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
 
     async Task AddProductToCart(MouseEventArgs args, ProductInCartVM productToBeAddedToCart)
     {
-        await _cartService.IncrementCart(new ShoppingCartVM()
-        {
-            ShoppingCartId = "",
-            ProductInCart = ProductToBeAddedToCart
-        });
+        await _cartService.IncrementCart(ProductToBeAddedToCart);
         ProductToBeAddedToCart = null;
         StateHasChanged();
         await JS.InvokeAsync<string>("initializeJsFunctions.HideAddToShoppingCartModal", null);

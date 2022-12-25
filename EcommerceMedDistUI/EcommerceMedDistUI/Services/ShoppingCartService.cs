@@ -15,14 +15,14 @@ namespace EcommerceMedDistUI.Services
             _localStorage = localStorageService;
         }
 
-        public async Task<ShoppingCartVM> GetItemInShoppingCart(string productId)
+        public async Task<ProductInCartVM> GetItemInShoppingCart(string productId)
         {
-            var cart = await _localStorage.GetItemAsync<List<ShoppingCartVM>>(Constants.ShoppingCart);
+            var cart = await _localStorage.GetItemAsync<ShoppingCartVM>(Constants.ShoppingCart);
             if (cart == null)
             {
-                cart = new List<ShoppingCartVM>();
+                cart = new ShoppingCartVM();
             }
-            var productAlreadyInCart = cart.FirstOrDefault(sci => sci.ProductInCart.Id == productId);
+            var productAlreadyInCart = cart.ProductsInCart.FirstOrDefault(p => p.Id == productId);
             if (productAlreadyInCart != null)
             {
                 return productAlreadyInCart;
@@ -30,19 +30,19 @@ namespace EcommerceMedDistUI.Services
             return null;
         }
 
-        public async Task IncrementCart(ShoppingCartVM cartToAdd)
+        public async Task IncrementCart(ProductInCartVM productToBeAddedInCartVM)
         {
-            var cart = await _localStorage.GetItemAsync<List<ShoppingCartVM>>(Constants.ShoppingCart);
+            var cart = await _localStorage.GetItemAsync<ShoppingCartVM>(Constants.ShoppingCart);
             if (cart == null)
             {
-                cart = new List<ShoppingCartVM>();
+                cart = new ShoppingCartVM();
             }
-            var productAlreadyInCart = cart.FirstOrDefault(sci => sci.ProductInCart.Id == cartToAdd.ProductInCart.Id);
+            var productAlreadyInCart = cart.ProductsInCart.FirstOrDefault(p => p.Id == productToBeAddedInCartVM.Id);
             if(productAlreadyInCart != null)
             {
-                foreach(var concentrationToAddInCart in cartToAdd.ProductInCart.Concentrations)
+                foreach(var concentrationToAddInCart in productToBeAddedInCartVM.Concentrations)
                 {
-                    var concentrationInCart = productAlreadyInCart.ProductInCart.Concentrations.FirstOrDefault(cic => 
+                    var concentrationInCart = productAlreadyInCart.Concentrations.FirstOrDefault(cic => 
                         cic.ConcentrationValue.CompareTo(concentrationToAddInCart.ConcentrationValue) == 0);
                     if(concentrationInCart != null)
                     {
@@ -50,36 +50,36 @@ namespace EcommerceMedDistUI.Services
                     }
                     else
                     {
-                        productAlreadyInCart.ProductInCart.Concentrations.Add(concentrationToAddInCart);
+                        productAlreadyInCart.Concentrations.Add(concentrationToAddInCart);
                     }
                 }
             }
             else
             {
-                cart.Add(cartToAdd);
+                cart.ProductsInCart.Add(productToBeAddedInCartVM);
             }
             await _localStorage.SetItemAsync(Constants.ShoppingCart, cart);
             OnChange.Invoke();
         }
 
-        public async Task DecrementCart(ShoppingCartVM cartToDecrement)
+        public async Task DecrementProductInCart(ProductInCartVM productInCart)
         {
-            var cart = await _localStorage.GetItemAsync<List<ShoppingCartVM>>(Constants.ShoppingCart);
-            var productAlreadyInCart = cart.FirstOrDefault(sci => sci.ProductInCart.Id == cartToDecrement.ProductInCart.Id);
+            var cart = await _localStorage.GetItemAsync<ShoppingCartVM>(Constants.ShoppingCart);
+            var productAlreadyInCart = cart.ProductsInCart.FirstOrDefault(p => p.Id == productInCart.Id);
             if (productAlreadyInCart != null)
             {
-                var concentrationInCart = productAlreadyInCart.ProductInCart.Concentrations.FirstOrDefault(cic =>
-                    cic.ConcentrationValue == cartToDecrement.ProductInCart.Concentrations[0].ConcentrationValue);
+                var concentrationInCart = productAlreadyInCart.Concentrations.FirstOrDefault(cic =>
+                    cic.ConcentrationValue == productInCart.Concentrations[0].ConcentrationValue);
                 if (concentrationInCart != null)
                 {
-                    concentrationInCart.Quantity -= cartToDecrement.ProductInCart.Concentrations[0].Quantity;
+                    concentrationInCart.Quantity -= productInCart.Concentrations[0].Quantity;
                 }
             }
             await _localStorage.SetItemAsync(Constants.ShoppingCart, cart);
             OnChange.Invoke();
         }
 
-        public async Task UpdateShoppingCart(List<ShoppingCartVM> shoppingCart)
+        public async Task UpdateShoppingCart(ShoppingCartVM shoppingCart)
         {
             await _localStorage.SetItemAsync(Constants.ShoppingCart, shoppingCart);
             OnChange.Invoke();

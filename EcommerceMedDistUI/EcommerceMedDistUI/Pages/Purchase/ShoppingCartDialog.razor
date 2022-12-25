@@ -9,7 +9,7 @@
 tabindex="-1" aria-labelledby="shoppingCartModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            @if(ShoppingCarts != null && ShoppingCarts.Any())
+            @if(ShoppingCart != null && ShoppingCart.ProductsInCart.Any())
             {
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="addToCartModalLabel">Carrinho de Compras</h1>
@@ -17,10 +17,10 @@ tabindex="-1" aria-labelledby="shoppingCartModalLabel" aria-hidden="true">
                     type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    @foreach(var shoppingCartItem in ShoppingCarts)
+                    @foreach(var productInCart in ShoppingCart.ProductsInCart)
                     {
                         <div class="card-header py-3">
-                            <h4 class="my-0 fw-normal">@shoppingCartItem.ProductInCart.Name</h4>
+                            <h4 class="my-0 fw-normal">@productInCart.Name</h4>
                         </div>
                         <table class="table">
                             <thead>
@@ -32,7 +32,7 @@ tabindex="-1" aria-labelledby="shoppingCartModalLabel" aria-hidden="true">
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach(var conceentration in shoppingCartItem.ProductInCart.Concentrations)
+                                @foreach(var conceentration in productInCart.Concentrations)
                                 {
                                     <tr>
                                         <td>@conceentration.ConcentrationDescription</td>
@@ -78,11 +78,11 @@ tabindex="-1" aria-labelledby="shoppingCartModalLabel" aria-hidden="true">
     [Parameter]
     public EventCallback<bool> OnClose { get; set; }
 
-    List<ShoppingCartVM> ShoppingCarts { get; set; } = null;
+    ShoppingCartVM ShoppingCart { get; set; } = null;
 
     protected override async Task OnInitializedAsync()
     {
-        ShoppingCarts = await _localStorage.GetItemAsync<List<ShoppingCartVM>>(Constants.ShoppingCart);
+        ShoppingCart = await _localStorage.GetItemAsync<ShoppingCartVM>(Constants.ShoppingCart);
         await base.OnInitializedAsync();
     }
 
@@ -106,7 +106,7 @@ tabindex="-1" aria-labelledby="shoppingCartModalLabel" aria-hidden="true">
 
     async Task UpdateShoppingCart(MouseEventArgs args)
     {
-        await _cartService.UpdateShoppingCart(ShoppingCarts);
+        await _cartService.UpdateShoppingCart(ShoppingCart);
         await CloseModal(args);
         var message = new NotificationMessage 
         { 

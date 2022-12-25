@@ -32,7 +32,32 @@ namespace EcommerceMedDistUI.Services
                     return result;
                 }
             }
-            return new PaymentVM();
+            else
+            {
+                throw new Exception("Pagamento não existe!");
+            }
+        }
+
+        public async Task<PaymentVM> GetPayment(string paymentId)
+        {
+            var response = await _httpClient.GetAsync($"api/payments/{paymentId}");
+            if (response != null)
+            {
+                string responseResult = await response.Content.ReadAsStringAsync();
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new Exception(responseResult);
+                }
+                else
+                {
+                    var result = JsonConvert.DeserializeObject<PaymentVM>(responseResult);
+                    return result;
+                }
+            }
+            else
+            {
+                throw new Exception("Pagamento não existe!");
+            }
         }
     }
 }

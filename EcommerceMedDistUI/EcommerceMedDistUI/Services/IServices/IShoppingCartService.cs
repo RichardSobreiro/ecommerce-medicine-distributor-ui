@@ -5,9 +5,9 @@ namespace EcommerceMedDistUI.Services.IServices
     public interface IShoppingCartService
     {
         public event Action OnChange;
-        Task DecrementCart(ShoppingCartVM shoppingCart);
-        Task IncrementCart(ShoppingCartVM shoppingCart);
-        Task<ShoppingCartVM> GetItemInShoppingCart(string productId);
-        Task UpdateShoppingCart(List<ShoppingCartVM> shoppingCart);
+        Task<ProductInCartVM> GetItemInShoppingCart(string productId);
+        Task IncrementCart(ProductInCartVM productToBeAddedInCartVM);
+        Task DecrementProductInCart(ProductInCartVM productToBeRemovedInCartVM);
+        Task UpdateShoppingCart(ShoppingCartVM shoppingCart);
     }
 }

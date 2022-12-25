@@ -187,15 +187,15 @@
             {
                 if(productAlreadyInShoppingCart != null)
                 {
-                    var concentrationAlreadyInShoppingCart = productAlreadyInShoppingCart.ProductInCart.Concentrations.FirstOrDefault(
+                    var concentrationAlreadyInShoppingCart = productAlreadyInShoppingCart.Concentrations.FirstOrDefault(
                         c => c.ConcentrationValue.CompareTo(concentration.ConcentrationValue) == 0);
                     if(concentrationAlreadyInShoppingCart != null)
                     {
-                        ProductToBeAddedToCart.Concentrations = productAlreadyInShoppingCart.ProductInCart.Concentrations;
+                        ProductToBeAddedToCart.Concentrations = productAlreadyInShoppingCart.Concentrations;
                     }
                     else
                     {
-                        ProductToBeAddedToCart.Concentrations.AddRange(productAlreadyInShoppingCart.ProductInCart.Concentrations);
+                        ProductToBeAddedToCart.Concentrations.AddRange(productAlreadyInShoppingCart.Concentrations);
                         ProductToBeAddedToCart.Concentrations.Add(new ConcentrationInCartVM()
                         {
                             ConcentrationValue = concentration.ConcentrationValue,
