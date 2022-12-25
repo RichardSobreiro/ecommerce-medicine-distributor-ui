@@ -17,7 +17,9 @@ tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
                     <div class="card-header py-3">
                         <h4 class="my-0 fw-normal">@ProductToBeAddedToCart.Name</h4>
                     </div>
-                    <table class="table">
+                    @if(ProductToBeAddedToCart.Concentrations.Any())
+                    {
+                        <table class="table">
                         <thead>
                             <tr>
                                 <th scope="col">Concentração</th>
@@ -38,7 +40,28 @@ tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
                                 </tr>
                             }
                         </tbody>
-                    </table>
+                        </table>
+                    }
+                    else
+                    {
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Preço</th>
+                                    <th scope="col">Quantidade</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>@ProductToBeAddedToCart.SellingPrice R$</td>
+                                    <td>
+                                        <input style="max-width:25%" @bind="ProductToBeAddedToCart.Quantity"
+                                            type="number" class="form-control" id="QuantityShoppingCart">
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    }
                 </div>
                 <div class="modal-footer">
                     <button @onclick="@(async (args) => await OnClose.InvokeAsync(true))"

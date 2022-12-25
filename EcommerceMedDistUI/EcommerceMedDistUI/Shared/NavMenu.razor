@@ -105,7 +105,12 @@
     public async void GetCartCount()
     {
         ShoppingCarts = await _localStorage.GetItemAsync<ShoppingCartVM>(Constants.ShoppingCart);
-        CartItemsCount = ShoppingCarts == null ? 0 : ShoppingCarts.ProductsInCart.Sum(p => p.Concentrations.Count());
+        CartItemsCount = ShoppingCarts == null ? 0 : ShoppingCarts.ProductsInCart.Sum(p => {
+            if (p.Concentrations.Any())
+                return p.Concentrations.Count();
+            else
+                return 1;
+        });
         StateHasChanged();
     }
 

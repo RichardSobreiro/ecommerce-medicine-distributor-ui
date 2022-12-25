@@ -7,5 +7,7 @@
         public string Description { get; set; } = "";
         public string? MeasurementUnitId { get; set; }
         public List<ConcentrationInCartVM> Concentrations { get; set; } = new();
+        public decimal SellingPrice { get; set; }
+        public int Quantity { get; set; }
     }
 }

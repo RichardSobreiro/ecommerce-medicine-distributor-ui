@@ -12,32 +12,52 @@
 @inject ILocalStorageService _localStorage
 @inject StateContainer _stateContainer
 
-@*@if (IsAuthenticated.HasValue && IsAuthenticated.Value)
-{*@
+@if (IsAuthenticated.HasValue && IsAuthenticated.Value)
+{
     <div class="row m-5">
         <div class="col-md-5 col-lg-4 order-md-last">
             <h4 class="d-flex justify-content-between align-items-center mb-3">
                 <span class="text-primary">Seu Carrinho</span>
-                <span class="badge bg-primary rounded-pill">@(ShoppingCart != null ? ShoppingCart.ProductsInCart.Sum(p => p.Concentrations.Count()) : 0)</span>
+                <span class="badge bg-primary rounded-pill">
+                    @(ShoppingCart != null ? ShoppingCart.ProductsInCart.Sum(p => { 
+                        if(p.Concentrations.Any())
+                            return p.Concentrations.Count();
+                        else
+                            return 1;
+                    }): 0)
+                </span>
             </h4>
             <ul class="list-group mb-3">
                 @foreach (var productInCart in ShoppingCart.ProductsInCart)
                 {
-                    @foreach (var concentrationInCart in productInCart.Concentrations)
+                    if(productInCart.Concentrations.Any())
+                    {
+                        @foreach (var concentrationInCart in productInCart.Concentrations)
+                        {
+                            <li class="list-group-item d-flex justify-content-between lh-sm">
+                                <div>
+                                    <p class="my-0">@productInCart.Name</p>
+                                    <small class="text-muted">@concentrationInCart.ConcentrationDescription</small>
+                                </div>
+                                <div class="text-muted">@($"{concentrationInCart.SellingPrice * concentrationInCart.Quantity} R$")</div>
+                            </li>
+                        }
+                    }
+                    else
                     {
                         <li class="list-group-item d-flex justify-content-between lh-sm">
-                            <div>
-                                <h6 class="my-0">@productInCart.Name</h6>
-                                <small class="text-muted">@concentrationInCart.ConcentrationDescription</small>
+                            <div style="max-width:70%">
+                                <p class="my-0">@productInCart.Name</p>
+                                <small class="text-muted">@productInCart.Description</small>
                             </div>
-                            <span class="text-muted">@($"{concentrationInCart.SellingPrice * concentrationInCart.Quantity} R$")</span>
+                            <span class="text-muted">@($"{productInCart.SellingPrice * productInCart.Quantity} R$")</span>
                         </li>
                     }
                 }
                 <li class="list-group-item d-flex justify-content-between">
                     <span>Total</span>
                     <strong>
-                        @($"{(ShoppingCart != null ? ShoppingCart.ProductsInCart.Sum(s => s.Concentrations.Sum(c => c.SellingPrice * (decimal)c.ConcentrationValue)) : 0)} R$")
+                        @($"{(ShoppingCart != null ? ShoppingCart.ProductsInCart.Sum(p => p.Concentrations.Any() ? p.Concentrations.Sum(c => c.SellingPrice * (decimal)c.Quantity) : p.SellingPrice * p.Quantity) : 0)} R$")
                     </strong>
                 </li>
             </ul>
@@ -239,17 +259,17 @@
             </form>
         </div>
     </div>
-@*}
+}
 else
 {
     <div class="d-flex align-items-center" style="min-height: 40vh">
         <div class="w-100 text-center">
             <h3>Você não está autenticado!</h3>
             <h4>Click no botão abaixo para realizar o login:</h4>
-            <button @onclick="BeginSignIn" type="button" class="btn btn-success">Login</button>
+            <button @onclick="async (args) => await BeginSignIn()" type="button" class="btn btn-success">Login</button>
         </div>
     </div>
-}*@
+}
 
 @code {
     [Parameter]
@@ -274,6 +294,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await _localStorage.SetItemAsync("PaymentStarted", false);
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();  
         User = authState.User;
         if (User.Identities.Any() && User.Identities.ElementAt(0).IsAuthenticated)
@@ -299,8 +320,9 @@ else
         await base.OnInitializedAsync();
     }
 
-    private void BeginSignIn()
+    async Task BeginSignIn()
     {
+        await _localStorage.SetItemAsync("PaymentStarted", true);
         _navigationManager.NavigateTo("authentication/login");
     }
 

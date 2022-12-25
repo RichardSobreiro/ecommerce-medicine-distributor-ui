@@ -29,68 +29,131 @@
 
 @foreach(var product in Products)
 {
-    <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
-        <div class="col">
-            <div class="card mb-4 rounded-3 shadow-sm">
-                <div class="card-header py-3">
-                    <h4 class="my-0 fw-normal">@product.Name</h4>
-                </div>
-                <div class="card-body">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Concentração</th>
-                                <th scope="col">Preço</th>
-                                <th scope="col">Negociar</th>
-                                <th scope="col">Comprar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        @foreach (var concentration in product.SelectedDrugsConcentrations)
-                        {
-                            <tr>
-                                <td>@concentration.ConcentrationDescription</td>
-                                <td>@concentration.SellingPrice R$</td>
-                                <td>
-                                    <!-- Negotiation -->
-                                    <span>
-                                        <button @onclick="@(async (args) => await OpenNegotiationArea(args, 
-                                            product.Id, concentration.ConcentrationValue))"
-                                        type="button" class="btn btn-secondary" 
-                                        data-bs-toggle="tooltip" data-bs-placement="top" 
-                                        title="Digite aqui mesmo o valor que você gostaria de pagar.">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
-                                                <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7Zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path>
-                                            </svg>
-                                        </button>
-                                    </span>
-                                </td>
-                                <td>
-                                    <!-- Purchase -->
-                                    <span>
-                                        <button @onclick="@(async (args) => await OpenModalAddProductToCart(args, 
-                                            product.Id, concentration.ConcentrationValue))"
-                                        type="button" class="btn btn-secondary" 
-                                        data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" 
-                                        title="Adicione o produto ao seu carrinho!">
-                                            <svg style="padding-bottom:4px;" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
-                                              <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"></path>
-                                            </svg>
-                                        </button>
-                                    </span>
-                                </td>
-                            </tr>
-                        }
-                        </tbody>
-                    </table>
-                    <button @onclick="@(async (args) => await ChatWithOperator(args))" 
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="Converse com um atendente por aqui mesmo!"
-                    type="button" class="w-100 btn btn-lg btn-outline-primary">Chat com Atendente
-                    </button>
+    @if(product.SelectedDrugsConcentrations.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">@product.Name</h4>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Concentração</th>
+                                    <th scope="col">Preço</th>
+                                    <th scope="col">Negociar</th>
+                                    <th scope="col">Comprar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var concentration in product.SelectedDrugsConcentrations)
+                            {
+                                <tr>
+                                    <td>@concentration.ConcentrationDescription</td>
+                                    <td>@concentration.SellingPrice R$</td>
+                                    <td>
+                                        <!-- Negotiation -->
+                                        <span>
+                                            <button @onclick="@(async (args) => await OpenNegotiationArea(args, 
+                                                product.Id, concentration.ConcentrationValue))"
+                                            type="button" class="btn btn-secondary" 
+                                            data-bs-toggle="tooltip" data-bs-placement="top" 
+                                            title="Digite aqui mesmo o valor que você gostaria de pagar.">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
+                                                    <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7Zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path>
+                                                </svg>
+                                            </button>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <!-- Purchase -->
+                                        <span>
+                                            <button @onclick="@(async (args) => await OpenModalAddProductToCart(args, 
+                                                product.Id, concentration.ConcentrationValue))"
+                                            type="button" class="btn btn-secondary" 
+                                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" 
+                                            title="Adicione o produto ao seu carrinho!">
+                                                <svg style="padding-bottom:4px;" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
+                                                  <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"></path>
+                                                </svg>
+                                            </button>
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                        <button @onclick="@(async (args) => await ChatWithOperator(args))" 
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Converse com um atendente por aqui mesmo!"
+                        type="button" class="w-100 btn btn-lg btn-outline-primary">Chat com Atendente
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">@product.Name</h4>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Preço</th>
+                                    <th scope="col">Negociar</th>
+                                    <th scope="col">Comprar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>@product.SellingPrice R$</td>
+                                    <td>
+                                        <!-- Negotiation -->
+                                        <span>
+                                            <button @onclick="@(async (args) => await OpenNegotiationArea(args, 
+                                                product.Id))"
+                                            type="button" class="btn btn-secondary" 
+                                            data-bs-toggle="tooltip" data-bs-placement="top" 
+                                            title="Digite aqui mesmo o valor que você gostaria de pagar.">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
+                                                    <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7Zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path>
+                                                </svg>
+                                            </button>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <!-- Purchase -->
+                                        <span>
+                                            <button @onclick="@(async (args) => await OpenModalAddProductToCart(args, 
+                                                product.Id))"
+                                            type="button" class="btn btn-secondary" 
+                                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" 
+                                            title="Adicione o produto ao seu carrinho!">
+                                                <svg style="padding-bottom:4px;" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
+                                                  <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"></path>
+                                                </svg>
+                                            </button>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button @onclick="@(async (args) => await ChatWithOperator(args))" 
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Converse com um atendente por aqui mesmo!"
+                        type="button" class="w-100 btn btn-lg btn-outline-primary">Chat com Atendente
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 }
 
 @if (OpenAddToCartDialog)
@@ -121,6 +184,15 @@
         }
     }
 
+    protected override async Task OnInitializedAsync()
+    {
+        bool paymentStarted = await _localStorage.GetItemAsync<bool>("PaymentStarted");
+        if (paymentStarted)
+        {
+            _navigationManager.NavigateTo("pagamento");
+        }
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await JS.InvokeAsync<string>("initializeJsFunctions.Tooltips", null);
@@ -138,39 +210,15 @@
 
     bool ValidateProductsSearch()
     {
-        if (string.IsNullOrEmpty(PartialProductName))
-        {
-            var message = new NotificationMessage 
-            { 
-                Severity = NotificationSeverity.Error, 
-                Summary = "Campos Inválidos", 
-                Detail = "Preencha um valor para o nome do produto ou medicamento!", 
-                Duration = 5000 
-            };
-            _notificationService.Notify(message);
-            return false;
-        }
-        if (PartialProductName.Length < 3)
-        {
-            var message = new NotificationMessage 
-            { 
-                Severity = NotificationSeverity.Error, 
-                Summary = "Campos Inválidos", 
-                Detail = "O nome do produto ou medicamento precisa ser maior ou igual a 3 caracteres!", 
-                Duration = 5000 
-            };
-            _notificationService.Notify(message);
-            return false;
-        }
         return true;
     }
 
-    async Task OpenNegotiationArea(MouseEventArgs args, string? productId, double concentrationValue)
+    async Task OpenNegotiationArea(MouseEventArgs args, string? productId, double? concentrationValue = null)
     {
         await JS.InvokeAsync<string>("initializeJsFunctions.HideAllTooltips", null);
     }
 
-    async Task OpenModalAddProductToCart(MouseEventArgs args, string? productId, double concentrationValue)
+    async Task OpenModalAddProductToCart(MouseEventArgs args, string? productId, double? concentrationValue = null)
     {
         await JS.InvokeAsync<string>("initializeJsFunctions.HideAllTooltips", null);
         var product = Products.FirstOrDefault(p => p.Id == productId);
@@ -182,20 +230,34 @@
             ProductToBeAddedToCart.Name = product.Name;
             ProductToBeAddedToCart.Description = product.Description;
             ProductToBeAddedToCart.MeasurementUnitId = product.MeasurementUnitId;
-            var concentration = product.SelectedDrugsConcentrations.FirstOrDefault(c => c.ConcentrationValue == concentrationValue);
-            if (concentration != null)
+            ProductToBeAddedToCart.SellingPrice = product.SellingPrice;
+            if(product.SelectedDrugsConcentrations.Any())
             {
-                if(productAlreadyInShoppingCart != null)
+                var concentration = product.SelectedDrugsConcentrations?.FirstOrDefault(c => c.ConcentrationValue == concentrationValue);
+                if (concentration != null)
                 {
-                    var concentrationAlreadyInShoppingCart = productAlreadyInShoppingCart.Concentrations.FirstOrDefault(
-                        c => c.ConcentrationValue.CompareTo(concentration.ConcentrationValue) == 0);
-                    if(concentrationAlreadyInShoppingCart != null)
+                    if(productAlreadyInShoppingCart != null)
                     {
-                        ProductToBeAddedToCart.Concentrations = productAlreadyInShoppingCart.Concentrations;
+                        var concentrationAlreadyInShoppingCart = productAlreadyInShoppingCart.Concentrations.FirstOrDefault(
+                            c => c.ConcentrationValue.CompareTo(concentration.ConcentrationValue) == 0);
+                        if(concentrationAlreadyInShoppingCart != null)
+                        {
+                            ProductToBeAddedToCart.Concentrations = productAlreadyInShoppingCart.Concentrations;
+                        }
+                        else
+                        {
+                            ProductToBeAddedToCart.Concentrations.AddRange(productAlreadyInShoppingCart.Concentrations);
+                            ProductToBeAddedToCart.Concentrations.Add(new ConcentrationInCartVM()
+                            {
+                                ConcentrationValue = concentration.ConcentrationValue,
+                                ConcentrationDescription = concentration.ConcentrationDescription,
+                                SellingPrice = concentration.SellingPrice,
+                                Quantity = 0
+                            });
+                        }
                     }
                     else
                     {
-                        ProductToBeAddedToCart.Concentrations.AddRange(productAlreadyInShoppingCart.Concentrations);
                         ProductToBeAddedToCart.Concentrations.Add(new ConcentrationInCartVM()
                         {
                             ConcentrationValue = concentration.ConcentrationValue,
@@ -204,30 +266,24 @@
                             Quantity = 0
                         });
                     }
+                    OpenAddToCartDialog = true;
                 }
                 else
                 {
-                    ProductToBeAddedToCart.Concentrations.Add(new ConcentrationInCartVM()
-                    {
-                        ConcentrationValue = concentration.ConcentrationValue,
-                        ConcentrationDescription = concentration.ConcentrationDescription,
-                        SellingPrice = concentration.SellingPrice,
-                        Quantity = 0
-                    });
+                    ProductToBeAddedToCart = null;
+                    var message = new NotificationMessage 
+                    { 
+                        Severity = NotificationSeverity.Error, 
+                        Summary = "Campos Inválidos", 
+                        Detail = "Valor de concentração não encontrado!", 
+                        Duration = 5000 
+                    };
+                    _notificationService.Notify(message);
                 }
-                OpenAddToCartDialog = true;
             }
             else
             {
-                ProductToBeAddedToCart = null;
-                var message = new NotificationMessage 
-                { 
-                    Severity = NotificationSeverity.Error, 
-                    Summary = "Campos Inválidos", 
-                    Detail = "Valor de concentração não encontrado!", 
-                    Duration = 5000 
-                };
-                _notificationService.Notify(message);
+                OpenAddToCartDialog = true;
             }
         }
     }
