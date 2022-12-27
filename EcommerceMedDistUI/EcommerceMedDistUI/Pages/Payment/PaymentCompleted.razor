@@ -9,6 +9,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider 
 @inject NotificationService _notificationService
 @inject NavigationManager _navigationManager
+@inject IShoppingCartService _cartService
 @inject IPaymentServices _paymentServices
 @inject IJSRuntime JS
 
@@ -81,6 +82,7 @@
                 <div class="col-sm-10">
                     <div id="barcodeTarget" class="barcodeTarget">
                         <small class="text-muted">Use este código e pague o boleto pelo celular:</small>
+                        <small class="text-black">@Payment.BoletoResponse.Boleto.barcode</small>
                     </div>
                     <canvas id="canvasTarget" width="670" height="120"></canvas>                                      
                 </div>
@@ -204,7 +206,8 @@ else
         try
         {
             Payment = await _paymentServices.GetPayment(PaymentId);
-            GenerateBarCodeImage();
+            await GenerateBarCodeImage();
+            _cartService.InvokeOnchange();
         }
         catch(Exception e)
         {

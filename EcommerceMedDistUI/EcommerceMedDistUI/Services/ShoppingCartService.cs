@@ -15,6 +15,11 @@ namespace EcommerceMedDistUI.Services
             _localStorage = localStorageService;
         }
 
+        public void InvokeOnchange()
+        {
+            OnChange.Invoke();
+        }
+
         public async Task<ProductInCartVM> GetItemInShoppingCart(string productId)
         {
             var cart = await _localStorage.GetItemAsync<ShoppingCartVM>(Constants.ShoppingCart);

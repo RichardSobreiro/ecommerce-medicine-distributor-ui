@@ -5,6 +5,7 @@ namespace EcommerceMedDistUI.Services.IServices
     public interface IShoppingCartService
     {
         public event Action OnChange;
+        void InvokeOnchange();
         Task<ProductInCartVM> GetItemInShoppingCart(string productId);
         Task IncrementCart(ProductInCartVM productToBeAddedInCartVM);
         Task DecrementProductInCart(ProductInCartVM productToBeRemovedInCartVM);
