@@ -4,9 +4,9 @@ namespace EcommerceMedDistUI.Utils
 {
     public class StateContainer
     {
-        private PaymentVM PaymentVM { get; set; } = null;
+        private PaymentRequestVM PaymentVM { get; set; } = null;
 
-        public PaymentVM Property
+        public PaymentRequestVM Property
         {
             get => PaymentVM;
             set

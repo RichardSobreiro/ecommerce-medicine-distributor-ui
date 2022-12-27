@@ -9,74 +9,38 @@
 tabindex="-1" aria-labelledby="shoppingCartModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="addToCartModalLabel">Carrinho de Compras</h1>
+                <button @onclick="@(async (args) => await CloseModal(args))"
+                type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
             @if(ShoppingCart != null && ShoppingCart.ProductsInCart.Any())
             {
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="addToCartModalLabel">Carrinho de Compras</h1>
-                    <button @onclick="@(async (args) => await CloseModal(args))"
-                    type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    @foreach(var productInCart in ShoppingCart.ProductsInCart)
+                @foreach(var productInCart in ShoppingCart.ProductsInCart)
+                {
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">@productInCart.Name</h4>
+                    </div>
+                    @if (productInCart.Concentrations.Any())
                     {
-                        <div class="card-header py-3">
-                            <h4 class="my-0 fw-normal">@productInCart.Name</h4>
-                        </div>
-                        @if (productInCart.Concentrations.Any())
-                        {
-                            <table class="table">
-                                <thead>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Concentração</th>
+                                    <th scope="col">Preço</th>
+                                    <th scope="col">Quantidade</th>
+                                    <th scope="col">Atualizar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach(var conceentration in productInCart.Concentrations)
+                                {
                                     <tr>
-                                        <th scope="col">Concentração</th>
-                                        <th scope="col">Preço</th>
-                                        <th scope="col">Quantidade</th>
-                                        <th scope="col">Atualizar</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach(var conceentration in productInCart.Concentrations)
-                                    {
-                                        <tr>
-                                            <td>@conceentration.ConcentrationDescription</td>
-                                            <td>@conceentration.SellingPrice R$</td>
-                                            <td>
-                                                <input style="max-width:80px;" @bind="conceentration.Quantity"
-                                                    type="number" class="form-control" id="QuantityShoppingCart" 
-                                                    aria-describedby="emailHelp">
-                                            </td>
-                                            <td>
-                                                <!-- Update Shopping Cart -->
-                                                <span>
-                                                    <button @onclick="@(async (args) => await UpdateShoppingCart(args))"
-                                                    type="button" class="btn btn-secondary" 
-                                                    data-bs-toggle="tooltip" data-bs-placement="top" 
-                                                    title="Digite aqui mesmo o valor que você gostaria de pagar.">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen-fill" viewBox="0 0 16 16">
-                                                            <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001z"/>
-                                                        </svg>
-                                                    </button>
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        }
-                        else
-                        {
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Preço</th>
-                                        <th scope="col">Quantidade</th>
-                                        <th scope="col">Atualizar</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>@productInCart.SellingPrice R$</td>
+                                        <td>@conceentration.ConcentrationDescription</td>
+                                        <td>@conceentration.SellingPrice R$</td>
                                         <td>
-                                            <input style="max-width:80px;" @bind="productInCart.Quantity"
+                                            <input style="max-width:80px;" @bind="conceentration.Quantity"
                                                 type="number" class="form-control" id="QuantityShoppingCart" 
                                                 aria-describedby="emailHelp">
                                         </td>
@@ -84,9 +48,9 @@ tabindex="-1" aria-labelledby="shoppingCartModalLabel" aria-hidden="true">
                                             <!-- Update Shopping Cart -->
                                             <span>
                                                 <button @onclick="@(async (args) => await UpdateShoppingCart(args))"
-                                                type="button" class="btn btn-primary" 
+                                                type="button" class="btn btn-secondary" 
                                                 data-bs-toggle="tooltip" data-bs-placement="top" 
-                                                title="Salve aqui as alterações no item.">
+                                                title="Digite aqui mesmo o valor que você gostaria de pagar.">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen-fill" viewBox="0 0 16 16">
                                                         <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001z"/>
                                                     </svg>
@@ -94,20 +58,56 @@ tabindex="-1" aria-labelledby="shoppingCartModalLabel" aria-hidden="true">
                                             </span>
                                         </td>
                                     </tr>
-                                </tbody>
-                            </table>
-                        }
+                                }
+                            </tbody>
+                        </table>
                     }
-                </div>
-                <div class="modal-footer">
-                    <button  @onclick="@(async (args) => await UpdateShoppingCart(args))"
-                    type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">Salvar Alterações</button>
-                    <button  @onclick="@(async (args) => await CloseModal(args))"
-                    type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Continuar Comprando</button>
-                    <button @onclick="@(async (args) => await NavigateToPayment(args))" 
-                    type="button" class="btn btn-success btn-sm">Ir para Pagamento</button>
-                </div>
+                    else
+                    {
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Preço</th>
+                                    <th scope="col">Quantidade</th>
+                                    <th scope="col">Atualizar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>@productInCart.SellingPrice R$</td>
+                                    <td>
+                                        <input style="max-width:80px;" @bind="productInCart.Quantity"
+                                            type="number" class="form-control" id="QuantityShoppingCart" 
+                                            aria-describedby="emailHelp">
+                                    </td>
+                                    <td>
+                                        <!-- Update Shopping Cart -->
+                                        <span>
+                                            <button @onclick="@(async (args) => await UpdateShoppingCart(args))"
+                                            type="button" class="btn btn-primary" 
+                                            data-bs-toggle="tooltip" data-bs-placement="top" 
+                                            title="Salve aqui as alterações no item.">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen-fill" viewBox="0 0 16 16">
+                                                    <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001z"/>
+                                                </svg>
+                                            </button>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    }
+                }
             }
+            </div>
+            <div class="modal-footer">
+                <button  @onclick="@(async (args) => await UpdateShoppingCart(args))"
+                type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">Salvar Alterações</button>
+                <button  @onclick="@(async (args) => await CloseModal(args))"
+                type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Continuar Comprando</button>
+                <button @onclick="@(async (args) => await NavigateToPayment(args))" 
+                type="button" class="btn btn-success btn-sm">Ir para Pagamento</button>
+            </div>
         </div>
     </div>
 </div>

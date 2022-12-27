@@ -1,7 +1,9 @@
 ﻿namespace EcommerceMedDistUI.ViewModels.Payment
 {
-    public class PaymentVM
+    public class PaymentRequestVM
     {
+        public string? Id { get; set; } = string.Empty;
+        public string UserEmail { get; set; } = string.Empty;
         public string CpfCnpj { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;

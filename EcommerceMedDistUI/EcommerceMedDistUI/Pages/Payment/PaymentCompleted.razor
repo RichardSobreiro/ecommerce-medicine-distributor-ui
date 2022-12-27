@@ -1,14 +1,21 @@
 ﻿@page "/pagamento/completo/{PaymentId}"
 
+@using EcommerceMedDistUI.Utils.Extensions
 @using EcommerceMedDistUI.ViewModels.Payment
 @using Newtonsoft.Json
+@using System.Drawing
+@using System.Security.Claims
 
+@inject AuthenticationStateProvider AuthenticationStateProvider 
 @inject NotificationService _notificationService
 @inject NavigationManager _navigationManager
 @inject IPaymentServices _paymentServices
+@inject IJSRuntime JS
 
-@*@if (IsAuthenticated.HasValue && IsAuthenticated.Value)
-{*@
+<PageTitle>Pagamento Completo</PageTitle>
+
+@if (IsAuthenticated.HasValue && IsAuthenticated.Value)
+{
     <div class="row m-5">
         <div class="col-md-5 col-lg-4 order-md-last">
             <h4 class="d-flex justify-content-between align-items-center mb-3">
@@ -25,67 +32,141 @@
             <ul class="list-group mb-3">
                 @foreach (var productInCart in Payment.ShoppingCart.ProductsInCart)
                 {
-                    @foreach (var concentrationInCartVM in productInCart.Concentrations)
+                    if(productInCart.Concentrations.Any())
+                    {
+                        @foreach (var concentrationInCart in productInCart.Concentrations)
+                        {
+                            <li class="list-group-item d-flex justify-content-between lh-sm">
+                                <div>
+                                    <p class="my-0">@productInCart.Name</p>
+                                    <small class="text-muted">@concentrationInCart.ConcentrationDescription</small>
+                                </div>
+                                <div class="text-muted">@($"{concentrationInCart.SellingPrice * concentrationInCart.Quantity} R$")</div>
+                            </li>
+                        }
+                    }
+                    else
                     {
                         <li class="list-group-item d-flex justify-content-between lh-sm">
-                            <div>
-                                <h6 class="my-0">@productInCart.Name</h6>
-                                <small class="text-muted">@concentrationInCartVM.ConcentrationDescription</small>
+                            <div style="max-width:70%">
+                                <p class="my-0">@productInCart.Name</p>
+                                <small class="text-muted">@productInCart.Description</small>
                             </div>
-                            <span class="text-muted">@($"{concentrationInCartVM.SellingPrice * concentrationInCartVM.Quantity} R$")</span>
+                            <span class="text-muted">@($"{productInCart.SellingPrice * productInCart.Quantity} R$")</span>
                         </li>
                     }
                 }
                 <li class="list-group-item d-flex justify-content-between">
                     <span>Total</span>
                     <strong>
-                        @($"{(Payment.ShoppingCart != null ? Payment.ShoppingCart.ProductsInCart.Sum(s => s.Concentrations.Sum(c => c.SellingPrice * (decimal)c.ConcentrationValue)) : 0)} R$")
+                        @($"{(Payment.ShoppingCart != null ? Payment.ShoppingCart.ProductsInCart.Sum(p => p.Concentrations.Any() ? p.Concentrations.Sum(c => c.SellingPrice * (decimal)c.Quantity) : p.SellingPrice * p.Quantity) : 0)} R$")
                     </strong>
                 </li>
             </ul>
         </div>
         
         <div class="col-md-7 col-lg-8">
-            <hr class="my-4">
-            <h4 class="mb-3">Método de Pagamento</h4>
-            <div class="my-3">
-                <div class="form-check">
-                    <input disabled @bind="Payment.Boleto" id="boleto" name="paymentMethod" type="checkbox" 
-                        class="form-check-input" required="">
-                    <label class="form-check-label" for="boleto">Boleto</label>
+            <h4 class="mb-3 text-muted"><small class="text-primary">Método de Pagamento: </small>Boleto</h4>
+            <div class="row g-3">
+                <div class="col-sm-9">
+                    <label for="value" class="form-label h6">Valor a Pagar</label>
+                    <p id="value">@($"{(Payment.ShoppingCart != null ? Payment.ShoppingCart.ProductsInCart.Sum(p => p.Concentrations.Any() ? p.Concentrations.Sum(c => c.SellingPrice * (decimal)c.Quantity) : p.SellingPrice * p.Quantity) : 0)} R$")</p>
+                </div>
+                <div class="col-sm-3">
+                    <label for="dueDate" class="form-label h6">Date de Vencimento</label>
+                    <p id="dueDate">@Payment.DueDate.ToString("dd/MM/yyyy")</p>
                 </div>
             </div>
-            <h4 class="mb-3">Endereço de Cobrança</h4>
-            <form class="needs-validation" novalidate>
-
-                <div class="row g-3">
-                    <div class="col-sm-6">
-                        <label for="cpfCnpj" class="form-label">CNPJ ou CPF</label>
-                        <p value="@(Payment.CpfCnpj)" id="cpfCnpj" />
-                        <div class="invalid-feedback">
-                            Digite um número de documento válido.
-                        </div>
+            <div class="row g-3">
+                <div class="col-sm-10">
+                    <div id="barcodeTarget" class="barcodeTarget">
+                        <small class="text-muted">Use este código e pague o boleto pelo celular:</small>
                     </div>
+                    <canvas id="canvasTarget" width="670" height="120"></canvas>                                      
                 </div>
-            </form>
+                <div class="col-sm-2">
+                    <a role="button" class="btn btn-info btn-lg mt-5" href="@(Payment.BoletoResponse.Boleto.link)" target="_blank">Ver Boleto</a>
+                </div>
+            </div>
+
+            <h4 class="mb-3"><small class="text-primary">Dados de Identificação:</small></h4>
+            <div class="row g-3">
+                <div class="col-sm-3">
+                @if(Payment.CpfCnpj.Length == 14)
+                {
+                    <label for="cpfCnpj" class="form-label h6">CNPJ</label>
+                }
+                else if(Payment.CpfCnpj.Length == 11)
+                {
+                    <label for="cpfCnpj" class="form-label h6">CPF</label>
+                }
+                    <p id="cpfCnpj">@Payment.CpfCnpj.FormatDocument()</p>
+                </div>
+                <div class="col-sm-5">
+                    <label for="firstName" class="form-label h6">Nome no Boleto</label>
+                    <p id="firstName">@Payment.Name</p>
+                </div>
+                <div class="col-sm-4">
+                    <label for="email" class="form-label h6">E-mail</label>
+                    <p id="email">@Payment.Email</p>
+                </div>
+            </div>
+            <h4 class="mb-3"><small class="text-primary">Endereço de Cobrança:</small></h4>
+            <div class="row g-3">
+                <div class="col-sm-3">
+                    <label for="zip" class="form-label h6">CEP</label>
+                    <p id="zip">@Payment.BillingAddress.Cep</p>
+                </div>
+                <div class="col-sm-4">
+                    <label for="street" class="form-label h6">Rua</label>
+                    <p id="street">@Payment.BillingAddress.Street</p>
+                </div>
+                <div class="col-sm-2">
+                    <label for="number" class="form-label h6">Número</label>
+                    <p id="number">@Payment.BillingAddress.Number</p>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-sm-3">
+                    <label for="complement" class="form-label h6">Complemento</label>
+                    <p id="complement">@Payment.BillingAddress.Complement</p>
+                </div>
+                <div class="col-sm-4">
+                    <label for="district" class="form-label h6">Bairro</label>
+                    <p id="district">@Payment.BillingAddress.District</p>
+                </div>
+                <div class="col-sm-2">
+                    <label for="city" class="form-label h6">Cidade</label>
+                    <p id="city">@Payment.BillingAddress.City</p>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-sm-3">
+                    <label for="state" class="form-label h6">Estado</label>
+                    <p id="state">@Payment.BillingAddress.State</p>
+                </div>
+            </div>
         </div>
     </div>
-@*}
+}
 else
 {
     <div class="d-flex align-items-center" style="min-height: 40vh">
         <div class="w-100 text-center">
             <h3>Você não está autenticado!</h3>
             <h4>Click no botão abaixo para realizar o login:</h4>
-            <button @onclick="BeginSignIn" type="button" class="btn btn-success">Login</button>
+            <button @onclick="async (args) => await BeginSignIn()" type="button" class="btn btn-success">Login</button>
         </div>
     </div>
-}*@
+}
 
 @code {
     [Parameter]
-    public string PaymentId { get; set; } = string.Empty;
-    public PaymentVM Payment { get; set; } = new();
+    public string PaymentId { get; set; }
+
+    public bool? IsAuthenticated { get; set; } = false;
+    public PaymentResponseVM Payment { get; set; } = new();
+    ClaimsPrincipal User { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -100,8 +181,22 @@ else
             };
             _notificationService.Notify(message);
         }
-        await GetPayment();
+        else
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();  
+            User = authState.User;
+            if (User.Identities.Any() && User.Identities.ElementAt(0).IsAuthenticated)
+            {
+                IsAuthenticated = true;
+                await GetPayment();
+            }
+        }
         await base.OnInitializedAsync();
+    }
+
+    async Task BeginSignIn()
+    {
+        _navigationManager.NavigateTo("authentication/login");
     }
 
     async Task GetPayment()
@@ -109,6 +204,7 @@ else
         try
         {
             Payment = await _paymentServices.GetPayment(PaymentId);
+            GenerateBarCodeImage();
         }
         catch(Exception e)
         {
@@ -121,5 +217,10 @@ else
             };
             _notificationService.Notify(message);
         }
+    }
+
+    async Task GenerateBarCodeImage()
+    {
+        await JS.InvokeAsync<string>("initializeJsFunctions.GenerateBarcode", Payment.BoletoResponse.Boleto.barcode);
     }
 }

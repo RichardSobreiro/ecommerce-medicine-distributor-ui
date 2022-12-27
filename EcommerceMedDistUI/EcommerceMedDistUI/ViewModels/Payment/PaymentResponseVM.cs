@@ -1,7 +1,9 @@
 ﻿namespace EcommerceMedDistUI.ViewModels.Payment
 {
-    public class PaymentResponseDto
+    public class PaymentResponseVM
     {
+        public string? Id { get; set; } = string.Empty;
+        public string UserEmail { get; set; } = string.Empty;
         public string CpfCnpj { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
@@ -56,6 +58,8 @@
             public string Description { get; set; } = "";
             public string? MeasurementUnitId { get; set; }
             public List<ConcentrationInCartVM> Concentrations { get; set; } = new();
+            public decimal SellingPrice { get; set; }
+            public int Quantity { get; set; }
         }
         public class ConcentrationInCartVM
         {

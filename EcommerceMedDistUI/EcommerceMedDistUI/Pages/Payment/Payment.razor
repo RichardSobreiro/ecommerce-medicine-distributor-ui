@@ -12,6 +12,8 @@
 @inject ILocalStorageService _localStorage
 @inject StateContainer _stateContainer
 
+<PageTitle>Pagamento Novo</PageTitle>
+
 @if (IsAuthenticated.HasValue && IsAuthenticated.Value)
 {
     <div class="row m-5">
@@ -87,7 +89,7 @@
             <h4 class="mb-3">Data de Vencimento do Boleto</h4>
             <div class="row g-3">
                 <div class="col-sm-6">
-                    <input value="@(PaymentVM.DueDate)" @onchange="(args) => OnChangeDueDate(args)" type="date" 
+                    <input value="@(DueDate)" @onchange="(args) => OnChangeDueDate(args)" type="date" 
                         class="@(dueDateCssClasses)" id="dueDate" placeholder="" required>
                     <div class="invalid-feedback">
                         Digite uma data válida.
@@ -96,103 +98,101 @@
             </div>
 
             <h4 class="mb-3">Endereço de Cobrança</h4>
-            <form class="needs-validation" novalidate>
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <label for="cpfCnpj" class="form-label">CNPJ ou CPF</label>
+                    <input value="@(PaymentVM.CpfCnpj)" @onchange="(args) => OnChangeCpfCnpj(args)" type="text" 
+                        class="@(cpfCnpjCssClasses)" id="cpfCnpj" placeholder="" required>
+                    <div class="invalid-feedback">
+                        Digite um número de documento válido.
+                    </div>
+                </div>
+            </div>
 
-                <div class="row g-3">
-                    <div class="col-sm-6">
-                        <label for="cpfCnpj" class="form-label">CNPJ ou CPF</label>
-                        <input value="@(PaymentVM.CpfCnpj)" @onchange="(args) => OnChangeCpfCnpj(args)" type="text" 
-                            class="@(cpfCnpjCssClasses)" id="cpfCnpj" placeholder="" required>
-                        <div class="invalid-feedback">
-                            Digite um número de documento válido.
-                        </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <label for="firstName" class="form-label">Nome no Boleto</label>
+                    <input value="@(PaymentVM.Name)" @onchange="(args) => OnChangeNameInDocument(args)" type="text" 
+                        class="@(nameInDocumentCssClasses)" id="firstName" placeholder="" required="">
+                    <div class="invalid-feedback">
+                        Digite um nome válido.
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-3">
+                    <label for="zip" class="form-label">CEP</label>
+                    <input value="@(PaymentVM.BillingAddress.Cep)" 
+                        @onchange="@(async (args) => await GetCepInfoBillingAddress(args))" type="string" 
+                        class="@(cepBillingAddressCssClasses)" id="zip" placeholder="" required="">
+                    <div class="invalid-feedback">
+                    Informe um CEP válido.
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+
+                <div class="col-sm-12">
+                    <label for="email" class="form-label">E-mail <span class="text-muted">(E-mail que receberá o boleto)</span></label>
+                    <input value="@(PaymentVM.Email)"
+                        @onchange="@((args) => OnChangeEmail(args))" type="email" 
+                        class="@(emailCssClasses)" id="email" placeholder="email@exemplo.com">
+                    <div class="invalid-feedback">
+                    E-mail onde as informações relativas a compra serão enviadas.
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-sm-6">
-                        <label for="firstName" class="form-label">Nome no Boleto</label>
-                        <input value="@(PaymentVM.Name)" @onchange="(args) => OnChangeNameInDocument(args)" type="text" 
-                            class="@(nameInDocumentCssClasses)" id="firstName" placeholder="" required="">
-                        <div class="invalid-feedback">
-                            Digite um nome válido.
-                        </div>
+                <div class="col-sm-8">
+                    <label for="streetBillingAddress" class="form-label">Rua</label>
+                    <input disabled @bind="PaymentVM.BillingAddress.Street" type="text" class="form-control" 
+                        id="streetBillingAddress" placeholder="" required="">
+                </div>
+
+                <div class="col-sm-4">
+                    <label for="numeroBillingAddress" class="form-label">Número</label>
+                    <input value="@(PaymentVM.BillingAddress.Number)"
+                        @onchange="(args) => OnChangeBillingAddressNumber(args)" type="text" class="@(numberBillingAddressCssClasses)" 
+                        id="numeroBillingAddress" placeholder="" required="">
+                    <div class="invalid-feedback">
+                    Por favor, informe um número de rua válido.
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-sm-3">
-                        <label for="zip" class="form-label">CEP</label>
-                        <input value="@(PaymentVM.BillingAddress.Cep)" 
-                            @onchange="@(async (args) => await GetCepInfoBillingAddress(args))" type="string" 
-                            class="@(cepBillingAddressCssClasses)" id="zip" placeholder="" required="">
-                        <div class="invalid-feedback">
-                        Informe um CEP válido.
-                        </div>
-                    </div>
+                <div class="col-sm-6">
+                    <label for="complementBillingAddress" class="form-label">Complemento <span class="text-muted">(Optional)</span></label>
+                    <input @bind="PaymentVM.BillingAddress.Complement" type="text" class="form-control" 
+                        id="complementBillingAddress" placeholder="Apart...">
                 </div>
 
-                <div class="row">
-
-                    <div class="col-sm-12">
-                        <label for="email" class="form-label">E-mail <span class="text-muted">(E-mail que receberá o boleto)</span></label>
-                        <input value="@(PaymentVM.Email)"
-                            @onchange="@((args) => OnChangeEmail(args))" type="email" 
-                            class="@(emailCssClasses)" id="email" placeholder="email@exemplo.com">
-                        <div class="invalid-feedback">
-                        E-mail onde as informações relativas a compra serão enviadas.
-                        </div>
-                    </div>
-
-                    <div class="col-sm-8">
-                        <label for="streetBillingAddress" class="form-label">Rua</label>
-                        <input disabled @bind="PaymentVM.BillingAddress.Street" type="text" class="form-control" 
-                            id="streetBillingAddress" placeholder="" required="">
-                    </div>
-
-                    <div class="col-sm-4">
-                        <label for="numeroBillingAddress" class="form-label">Número</label>
-                        <input value="@(PaymentVM.BillingAddress.Number)"
-                            @onchange="(args) => OnChangeBillingAddressNumber(args)" type="text" class="@(numberBillingAddressCssClasses)" 
-                            id="numeroBillingAddress" placeholder="" required="">
-                        <div class="invalid-feedback">
-                        Por favor, informe um número de rua válido.
-                        </div>
-                    </div>
-
-                    <div class="col-sm-6">
-                        <label for="complementBillingAddress" class="form-label">Complemento <span class="text-muted">(Optional)</span></label>
-                        <input @bind="PaymentVM.BillingAddress.Complement" type="text" class="form-control" 
-                            id="complementBillingAddress" placeholder="Apart...">
-                    </div>
-
-                    <div class="col-sm-6">
-                        <label for="districtBillingAddress" class="form-label">Bairro</label>
-                        <input disabled @bind="PaymentVM.BillingAddress.District" type="text" class="form-control" 
-                            id="districtBillingAddress" placeholder="">
-                    </div>
-
-                    <div class="col-sm-4">
-                        <label for="cityBillingAddress" class="form-label">Cidade</label>
-                        <input disabled @bind="PaymentVM.BillingAddress.City" type="text" class="form-control" 
-                            id="cityBillingAddress" placeholder="" required=""/>
-                    </div>
-
-                    <div class="col-sm-4">
-                        <label for="stateBillingAddress" class="form-label">Estado</label>
-                        <input disabled @bind="PaymentVM.BillingAddress.State" type="text" class="form-control" 
-                            id="BillingAddress" placeholder="" required=""/>
-                    </div>
+                <div class="col-sm-6">
+                    <label for="districtBillingAddress" class="form-label">Bairro</label>
+                    <input disabled @bind="PaymentVM.BillingAddress.District" type="text" class="form-control" 
+                        id="districtBillingAddress" placeholder="">
                 </div>
 
-                <hr class="my-4">
-
-                <div class="form-check">
-                    <input @bind="PaymentVM.BillingEqualShippingAddress" type="checkbox" class="form-check-input" id="same-address" />
-                    <label class="form-check-label" for="same-address">Endereço de cobrança é igual ao endereço de entrega</label>
+                <div class="col-sm-4">
+                    <label for="cityBillingAddress" class="form-label">Cidade</label>
+                    <input disabled @bind="PaymentVM.BillingAddress.City" type="text" class="form-control" 
+                        id="cityBillingAddress" placeholder="" required=""/>
                 </div>
 
-                <hr class="my-4">
+                <div class="col-sm-4">
+                    <label for="stateBillingAddress" class="form-label">Estado</label>
+                    <input disabled @bind="PaymentVM.BillingAddress.State" type="text" class="form-control" 
+                        id="BillingAddress" placeholder="" required=""/>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="form-check">
+                <input @bind="PaymentVM.BillingEqualShippingAddress" type="checkbox" class="form-check-input" id="same-address" />
+                <label class="form-check-label" for="same-address">Endereço de cobrança é igual ao endereço de entrega</label>
+            </div>
+
+            <hr class="my-4">
 
             @if (!PaymentVM.BillingEqualShippingAddress)
             {
@@ -250,13 +250,12 @@
 
                     <hr class="my-4">
             }
-                <button @onclick="(args) => NavigateToPurchase()" class="btn btn-secondary btn-lg">
-                    Continuar Comprando
-                </button>
-                <button @onclick="(args) => NavigateToPaymentSummary()" class="btn btn-primary btn-lg float-end">
-                    Continuar para a Confirmação
-                </button>
-            </form>
+            <button @onclick="(args) => NavigateToPurchase()" class="btn btn-secondary btn-lg">
+                Continuar Comprando
+            </button>
+            <button @onclick="async (args) => await NavigateToPaymentSummary()" class="btn btn-primary btn-lg float-end">
+                Continuar para a Confirmação
+            </button>
         </div>
     </div>
 }
@@ -272,14 +271,14 @@ else
 }
 
 @code {
-    [Parameter]
     public bool? IsAuthenticated { get; set; } = false;
     ClaimsPrincipal User { get; set; } = new();
     bool cpfCnpjIsValid { get; set; } = true;
     bool cepBillingAddressIsValid { get; set; } = false;
     bool cepShippimentAddressIsValid { get; set; } = false;
-    PaymentVM PaymentVM { get; set; } = new();
+    PaymentRequestVM PaymentVM { get; set; } = new();
     ShoppingCartVM ShoppingCart { get; set; } = new();
+    DateTime DueDate { get; set; }
 
     string cssValidClasses { get; set; } = "form-control is-valid";
     string cssInValidClasses { get; set; } = "form-control is-invalid";
@@ -465,11 +464,13 @@ else
         return ValidateBillingAddressNumber();
     }
 
-    void NavigateToPaymentSummary()
+    async Task NavigateToPaymentSummary()
     {
         if (Validate())
         {
             _stateContainer.Property = PaymentVM;
+            ShoppingCart = await _localStorage.GetItemAsync<ShoppingCartVM>(Constants.ShoppingCart);
+            _stateContainer.Property.ShoppingCart = ShoppingCart;
             _navigationManager.NavigateTo("/pagamento/resumo");
         }
         else
@@ -606,6 +607,7 @@ else
         else
         {
             dueDateCssClasses = cssValidClasses;
+            PaymentVM.DueDate = dueDate;
             return true;
         }
     }

@@ -4,41 +4,40 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>EcommerceMedDistUI</title>
+    <!--<meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://security-authnz.sobreiro.dev;">-->
+    <title>Med Dist Ecommerce</title>
+    <link rel="icon" type="image/x-icon" href="healthcare-icon.png" />
     <base href="/" />
-    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
-    <link href="css/app.css" rel="stylesheet" />
+    <!--<link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="_content/Radzen.Blazor/css/material-base.css">
-    <link href="EcommerceMedDistUI.styles.css" rel="stylesheet" />
+    <!--<link rel="stylesheet" href="_content/Radzen.Blazor/css/material-base.css">
+    <link href="EcommerceMedDistUI.styles.css" rel="stylesheet" />-->
 </head>
 
 <body>
-    <div id="app">Loading...</div>
+    <div id="app">Carregando...</div>
 
-    <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
-    </div>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.min.js" integrity="sha384-IDwe1+LCz02ROU9k972gdyvl+AESN10+x7tBKgc9I5HFtuNz0wWnPclzo6p9vxnk" crossorigin="anonymous"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+    <!--<script type="text/javascript" src="jquery-barcode.js"></script>-->
+    <script type="text/javascript" src="jquery-barcode.min.js"></script>
     <script>
         (function () {
             window.initializeJsFunctions = {
                 Tooltips: function () {
                     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
                     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                        return new bootstrap.Tooltip(tooltipTriggerEl,{
+                        return new bootstrap.Tooltip(tooltipTriggerEl, {
                             container: 'body',
                             trigger: 'hover'
                         })
-                    }) 
+                    })
                 },
                 HideAllTooltips: function () {
                     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -66,6 +65,34 @@
                     if ($('#shoppingCartModal').length) {
                         $('#shoppingCartModal').modal('show');
                     }
+                },
+                GenerateBarcode: function (barcode) {
+                    var value = barcode;
+                    var btype = 'code128';
+                    var renderer = 'canvas';
+
+
+                    var settings = {
+                        output: renderer,
+                        bgColor: '#FFFFFF',
+                        color: '#000000',
+                        barWidth: '2',
+                        barHeight: '80',
+                        moduleSize: '1',
+                        posX: '5',
+                        posY: '10',
+                        addQuietZone: '1'
+                    };
+
+                    var canvas = $('#canvasTarget').get(0);
+                    var ctx = canvas.getContext('2d');
+                    ctx.lineWidth = 1;
+                    ctx.lineCap = 'butt';
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.strokeStyle = '#000000';
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+                    $("#canvasTarget").show().barcode(value, btype, settings);
                 }
             };
         })();

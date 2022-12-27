@@ -12,9 +12,13 @@
 @inject ILocalStorageService _localStorage
 @inject StateContainer _stateContainer
 
+<PageTitle>Pagamento Resumo</PageTitle>
+
 @if (IsAuthenticated.HasValue && IsAuthenticated.Value)
 {
     <div class="row m-5">
+        @if(PaymentVM != null)
+        {
         <div class="col-md-5 col-lg-4 order-md-last">
             <h4 class="d-flex justify-content-between align-items-center mb-3">
                 <span class="text-primary">Seu Carrinho</span>
@@ -74,8 +78,6 @@
                 </div>
             </div>
             <h4 class="mb-3">Endereço de Cobrança</h4>
-            <form class="needs-validation" novalidate>
-
                 <div class="row g-3">
                     <div class="col-sm-6">
                         <label for="cpfCnpj" class="form-label">CNPJ ou CPF</label>
@@ -229,11 +231,16 @@
                 <button @onclick="(args) => NavigateToPaymentCreation()" class="btn btn-secondary btn-lg">
                     Voltar
                 </button>
-                <button @onclick="(args) => CreateNewPayment(args)" class="btn btn-primary btn-lg float-end">
+                <button @onclick="async (args) => await CreateNewPayment(args)" class="btn btn-primary btn-lg float-end">
                     Confirmar o Pagamento
                 </button>
-            </form>
-        </div>
+            </div>
+        }
+        else
+        {
+            <h6>Erro ao gerar o pagamento.</h6> 
+            <h6>Retorne a página anterior!</h6>
+        }
     </div>
 }
 else
@@ -241,15 +248,16 @@ else
     <div class="d-flex align-items-center" style="min-height: 40vh">
         <div class="w-100 text-center">
             <h3>Você não está autenticado!</h3>
+            <h4>Click no botão abaixo para realizar o login:</h4>
+            <button @onclick="async (args) => await BeginSignIn()" type="button" class="btn btn-success">Login</button>
         </div>
     </div>
 }
 
 @code {
-    [Parameter]
     public bool? IsAuthenticated { get; set; } = false;
     [Parameter]
-    public PaymentVM PaymentVM { get; set; }
+    public PaymentRequestVM PaymentVM { get; set; }
     ShoppingCartVM ShoppingCart { get; set; } = new();
     ClaimsPrincipal User { get; set; } = new();
     bool cpfCnpjIsValid { get; set; } = true;
@@ -273,10 +281,17 @@ else
         if (User.Identities.Any() && User.Identities.ElementAt(0).IsAuthenticated)
         {
             IsAuthenticated = true;
+            PaymentVM = _stateContainer.Property;
+            if(PaymentVM != null)
+                PaymentVM.UserEmail = User?.Claims?.FirstOrDefault(c => c.Type == "email")?.Value;
         }
-        PaymentVM = _stateContainer.Property;
         ShoppingCart = await _localStorage.GetItemAsync<ShoppingCartVM>(Constants.ShoppingCart);
         await base.OnInitializedAsync();
+    }
+
+    async Task BeginSignIn()
+    {
+        _navigationManager.NavigateTo("authentication/login");
     }
 
     void NavigateToPaymentCreation()
@@ -288,29 +303,17 @@ else
     {
         try
         {
-            if (Validate())
-            {
-                await _paymentServices.CreateNewPayment(PaymentVM);
-                var message = new NotificationMessage 
-                { 
-                    Severity = NotificationSeverity.Success, 
-                    Summary = "Boleto criado com sucesso!", 
-                    Detail = $"", 
-                    Duration = 8000 
-                };
-                _notificationService.Notify(message);
-            }
-            else
-            {
-                var message = new NotificationMessage 
-                { 
-                    Severity = NotificationSeverity.Error, 
-                    Summary = "Existem erros nos dados de pagamento!", 
-                    Detail = "", 
-                    Duration = 8000 
-                };
-                _notificationService.Notify(message);
-            }
+            var paymentResponse = await _paymentServices.CreateNewPayment(PaymentVM);
+            var message = new NotificationMessage 
+            { 
+                Severity = NotificationSeverity.Success, 
+                Summary = "Boleto criado com sucesso!", 
+                Detail = $"", 
+                Duration = 8000 
+            };
+            _notificationService.Notify(message);
+            await _localStorage.RemoveItemAsync(Constants.ShoppingCart);
+            _navigationManager.NavigateTo($"/pagamento/completo/{paymentResponse.Id}");
         }
         catch(Exception e)
         {
@@ -324,210 +327,4 @@ else
             _notificationService.Notify(message);
         }
     }
-
-    bool Validate()
-    {
-        return cpfCnpjIsValid &&
-            ValidateNameInDocument() &&
-            ValidadeCep() &&
-            ValidateEmail() &&
-            ValidateBillingAddressNumber() &&
-            ValidateShippimentAddressNumber();
-    }
-
-    bool ValidateShippimentAddressNumber()
-    {
-        if (PaymentVM.BillingEqualShippingAddress)
-        {
-            return true;
-        }
-        if (string.IsNullOrEmpty(PaymentVM.ShippimentAddress.Number))
-        {
-            numberShippimentAddressCssClasses = cssInValidClasses;
-            return false;
-        }
-        numberShippimentAddressCssClasses = cssValidClasses;
-        return true;
-    }
-
-    bool ValidateBillingAddressNumber()
-    {
-        if (string.IsNullOrEmpty(PaymentVM.BillingAddress.Number))
-        {
-            numberBillingAddressCssClasses = cssInValidClasses;
-            return false;
-        }
-        numberBillingAddressCssClasses = cssValidClasses;
-        return true;
-    }
-
-    bool ValidateEmail()
-    {
-        if (string.IsNullOrWhiteSpace(PaymentVM.Email))
-        {
-            emailCssClasses = cssInValidClasses;
-            return false;
-        }
-        try
-        {
-            // Normalize the domain
-            PaymentVM.Email = Regex.Replace(PaymentVM.Email, @"(@)(.+)$", DomainMapper,
-                                    RegexOptions.None, TimeSpan.FromMilliseconds(200));
-
-            // Examines the domain part of the email and normalizes it.
-            string DomainMapper(Match match)
-            {
-                // Use IdnMapping class to convert Unicode domain names.
-                var idn = new IdnMapping();
-
-                // Pull out and process domain name (throws ArgumentException on invalid)
-                string domainName = idn.GetAscii(match.Groups[2].Value);
-
-                return match.Groups[1].Value + domainName;
-            }
-        }
-        catch (RegexMatchTimeoutException e)
-        {
-            emailCssClasses = cssInValidClasses;
-            return false;
-        }
-        catch (ArgumentException e)
-        {
-            emailCssClasses = cssInValidClasses;
-            return false;
-        }
-        try
-        {
-            if(Regex.IsMatch(PaymentVM.Email,
-                @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
-                RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250)))
-            {
-                emailCssClasses = cssValidClasses;
-                return true;
-            }
-        }
-        catch (RegexMatchTimeoutException)
-        {
-            emailCssClasses = cssInValidClasses;
-            return false;
-        }
-        emailCssClasses = cssValidClasses;
-        return true;
-    }
-
-    bool ValidadeCep()
-    {
-        return cepBillingAddressIsValid && (PaymentVM.BillingEqualShippingAddress || cepShippimentAddressIsValid);
-    }
-
-    bool ValidateNameInDocument()
-    {
-        if (string.IsNullOrEmpty(PaymentVM.Name) || PaymentVM.Name.Count() <= 3)
-        {
-            nameInDocumentCssClasses = cssInValidClasses;
-            return false;
-        }
-        nameInDocumentCssClasses = cssValidClasses;
-        return true;
-    }
-
-    bool ValidateDocument(string cpfCnpj)
-    {
-        bool isValid = false;
-        if (IsCnpj(cpfCnpj))
-            isValid = true;
-        else if (IsCpf(cpfCnpj))
-            isValid = true;
-        else
-            isValid = false;
-        if (isValid)
-        {
-            cpfCnpjCssClasses = "form-control is-valid";
-            PaymentVM.CpfCnpj = cpfCnpj;
-        }
-        else
-        {
-            cpfCnpjCssClasses = "form-control is-invalid";
-            var message = new NotificationMessage 
-            { 
-                Severity = NotificationSeverity.Error, 
-                Summary = "CPF/CNPJ não é valido", 
-                Detail = "", 
-                Duration = 5000 
-            };
-            _notificationService.Notify(message);
-        }
-        cpfCnpjIsValid = isValid;
-        return isValid;
-    }
-
-    bool IsCnpj(string cnpj)
-	{
-		int[] multiplicador1 = new int[12] {5,4,3,2,9,8,7,6,5,4,3,2};
-		int[] multiplicador2 = new int[13] {6,5,4,3,2,9,8,7,6,5,4,3,2};
-		int soma;
-		int resto;
-		string digito;
-		string tempCnpj;
-		cnpj = cnpj.Trim();
-		cnpj = cnpj.Replace(".", "").Replace("-", "").Replace("/", "");
-		if (cnpj.Length != 14)
-			return false;
-		tempCnpj = cnpj.Substring(0, 12);
-		soma = 0;
-		for(int i=0; i<12; i++)
-			soma += int.Parse(tempCnpj[i].ToString()) * multiplicador1[i];
-		resto = (soma % 11);
-		if ( resto < 2)
-			resto = 0;
-		else
-			resto = 11 - resto;
-		digito = resto.ToString();
-		tempCnpj = tempCnpj + digito;
-		soma = 0;
-		for (int i = 0; i < 13; i++)
-			soma += int.Parse(tempCnpj[i].ToString()) * multiplicador2[i];
-		resto = (soma % 11);
-		if (resto < 2)
-			resto = 0;
-		else
-			resto = 11 - resto;
-		digito = digito + resto.ToString();
-		return cnpj.EndsWith(digito);
-	}
-
-    bool IsCpf(string cpf)
-	{
-		int[] multiplicador1 = new int[9] { 10, 9, 8, 7, 6, 5, 4, 3, 2 };
-		int[] multiplicador2 = new int[10] { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 };
-		string tempCpf;
-		string digito;
-		int soma;
-		int resto;
-		cpf = cpf.Trim();
-		cpf = cpf.Replace(".", "").Replace("-", "");
-		if (cpf.Length != 11)
-		   return false;
-		tempCpf = cpf.Substring(0, 9);
-		soma = 0;
-		for(int i=0; i<9; i++)
-		    soma += int.Parse(tempCpf[i].ToString()) * multiplicador1[i];
-		resto = soma % 11;
-		if ( resto < 2 )
-		    resto = 0;
-		else
-		   resto = 11 - resto;
-		digito = resto.ToString();
-		tempCpf = tempCpf + digito;
-		soma = 0;
-		for(int i=0; i<10; i++)
-		    soma += int.Parse(tempCpf[i].ToString()) * multiplicador2[i];
-		resto = soma % 11;
-		if (resto < 2)
-		   resto = 0;
-		else
-		   resto = 11 - resto;
-		digito = digito + resto.ToString();
-	    return cpf.EndsWith(digito);
-	}
 }

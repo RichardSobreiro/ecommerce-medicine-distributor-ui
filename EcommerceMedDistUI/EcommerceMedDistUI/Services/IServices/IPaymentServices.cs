@@ -4,7 +4,8 @@ namespace EcommerceMedDistUI.Services.IServices
 {
     public interface IPaymentServices
     {
-        Task<PaymentVM> CreateNewPayment(PaymentVM paymentVM);
-        Task<PaymentVM> GetPayment(string paymentId);
+        Task<PaymentResponseVM> CreateNewPayment(PaymentRequestVM paymentVM);
+        Task<PaymentResponseVM> GetPayment(string paymentId);
+        Task<List<PaymentResponseVM>> GetPaymentByUserEmail(string userEmail);
     }
 }
