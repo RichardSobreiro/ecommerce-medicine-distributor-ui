@@ -27,13 +27,19 @@
     </button>
 </div>
 
-@foreach(var product in Products)
+@if (IsLoading)
 {
-    @if(product.SelectedDrugsConcentrations.Any())
+    <div class="text-center">
+        <img src="/images/loader.gif">
+    </div>
+}
+else
+{
+    @foreach(var product in Products)
     {
-        <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
-            <div class="col">
-                <div class="card mb-4 rounded-3 shadow-sm">
+            @if(product.SelectedDrugsConcentrations.Any())
+            {
+                <div style="width:30%;display:inline-block;" class="card mb-4 rounded-3 shadow-sm">
                     <div class="card-header py-3">
                         <h4 class="my-0 fw-normal">@product.Name</h4>
                     </div>
@@ -76,7 +82,7 @@
                                             data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" 
                                             title="Adicione o produto ao seu carrinho!">
                                                 <svg style="padding-bottom:4px;" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
-                                                  <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"></path>
+                                                    <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"></path>
                                                 </svg>
                                             </button>
                                         </span>
@@ -91,16 +97,12 @@
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
-    }
-    else
-    {
-        <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
-            <div class="col">
-                <div class="card mb-4 rounded-3 shadow-sm">
-                    <div class="card-header py-3">
-                        <h4 class="my-0 fw-normal">@product.Name</h4>
+            }
+            else
+            {
+                <div style="width:30%;display:inline-block;" class="card mx-3 my-1 rounded-3 shadow-sm">
+                    <div class="card-header">
+                        <h6 class="py-2">@product.Name</h6>
                     </div>
                     <div class="card-body">
                         <table class="table">
@@ -137,7 +139,7 @@
                                             data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" 
                                             title="Adicione o produto ao seu carrinho!">
                                                 <svg style="padding-bottom:4px;" xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
-                                                  <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"></path>
+                                                    <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"></path>
                                                 </svg>
                                             </button>
                                         </span>
@@ -151,10 +153,10 @@
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
+        }
     }
 }
+
 
 @if (OpenAddToCartDialog)
 {
@@ -167,6 +169,7 @@
 }
 
 @code {
+    public bool IsLoading { get; set; } = false;
     bool OpenAddToCartDialog { get; set; } = false;
     bool OpenShoppingCartDialog { get; set; } = false;
     string? PartialProductName { get; set; }
@@ -191,6 +194,7 @@
         {
             _navigationManager.NavigateTo("pagamento");
         }
+        await SearchProducts(new MouseEventArgs());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -201,11 +205,13 @@
 
     async Task SearchProducts(MouseEventArgs args)
     {
+        IsLoading = true;
         await JS.InvokeAsync<string>("initializeJsFunctions.HideAllTooltips", null);
         if (ValidateProductsSearch())
         {
             Products = await _productsService.SearchProductByName(PartialProductName);
         }
+        IsLoading = false;
     }
 
     bool ValidateProductsSearch()

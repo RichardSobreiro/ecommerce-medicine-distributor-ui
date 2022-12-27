@@ -16,232 +16,241 @@
 
 @if (IsAuthenticated.HasValue && IsAuthenticated.Value)
 {
-    <div class="row m-5">
-        @if(PaymentVM != null)
-        {
-        <div class="col-md-5 col-lg-4 order-md-last">
-            <h4 class="d-flex justify-content-between align-items-center mb-3">
-                <span class="text-primary">Seu Carrinho</span>
-                <span class="badge bg-primary rounded-pill">
-                    @(ShoppingCart != null ? ShoppingCart.ProductsInCart.Sum(p => { 
-                        if(p.Concentrations.Any())
-                            return p.Concentrations.Count();
-                        else
-                            return 1;
-                    }): 0)
-                </span>
-            </h4>
-            <ul class="list-group mb-3">
-                @foreach (var productInCart in ShoppingCart.ProductsInCart)
-                {
-                    if(productInCart.Concentrations.Any())
+    @if (IsLoading)
+    {
+        <div class="text-center">
+            <img src="/images/loader.gif">
+        </div>
+    }
+    else
+    {
+        <div class="row m-5">
+            @if(PaymentVM != null)
+            {
+            <div class="col-md-5 col-lg-4 order-md-last">
+                <h4 class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-primary">Seu Carrinho</span>
+                    <span class="badge bg-primary rounded-pill">
+                        @(ShoppingCart != null ? ShoppingCart.ProductsInCart.Sum(p => { 
+                            if(p.Concentrations.Any())
+                                return p.Concentrations.Count();
+                            else
+                                return 1;
+                        }): 0)
+                    </span>
+                </h4>
+                <ul class="list-group mb-3">
+                    @foreach (var productInCart in ShoppingCart.ProductsInCart)
                     {
-                        @foreach (var concentrationInCart in productInCart.Concentrations)
+                        if(productInCart.Concentrations.Any())
+                        {
+                            @foreach (var concentrationInCart in productInCart.Concentrations)
+                            {
+                                <li class="list-group-item d-flex justify-content-between lh-sm">
+                                    <div>
+                                        <p class="my-0">@productInCart.Name</p>
+                                        <small class="text-muted">@concentrationInCart.ConcentrationDescription</small>
+                                    </div>
+                                    <div class="text-muted">@($"{concentrationInCart.SellingPrice * concentrationInCart.Quantity} R$")</div>
+                                </li>
+                            }
+                        }
+                        else
                         {
                             <li class="list-group-item d-flex justify-content-between lh-sm">
-                                <div>
+                                <div style="max-width:70%">
                                     <p class="my-0">@productInCart.Name</p>
-                                    <small class="text-muted">@concentrationInCart.ConcentrationDescription</small>
+                                    <small class="text-muted">@productInCart.Description</small>
                                 </div>
-                                <div class="text-muted">@($"{concentrationInCart.SellingPrice * concentrationInCart.Quantity} R$")</div>
+                                <span class="text-muted">@($"{productInCart.SellingPrice * productInCart.Quantity} R$")</span>
                             </li>
                         }
                     }
-                    else
-                    {
-                        <li class="list-group-item d-flex justify-content-between lh-sm">
-                            <div style="max-width:70%">
-                                <p class="my-0">@productInCart.Name</p>
-                                <small class="text-muted">@productInCart.Description</small>
-                            </div>
-                            <span class="text-muted">@($"{productInCart.SellingPrice * productInCart.Quantity} R$")</span>
-                        </li>
-                    }
-                }
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Total</span>
-                    <strong>
-                        @($"{(ShoppingCart != null ? ShoppingCart.ProductsInCart.Sum(p => p.Concentrations.Any() ? p.Concentrations.Sum(c => c.SellingPrice * (decimal)c.Quantity) : p.SellingPrice * p.Quantity) : 0)} R$")
-                    </strong>
-                </li>
-            </ul>
-        </div>
-        
-        <div class="col-md-7 col-lg-8">
-            <hr class="my-4">
-            <h4 class="mb-3">Método de Pagamento</h4>
-            <div class="my-3">
-                <div class="form-check">
-                    <input disabled @bind="PaymentVM.Boleto" id="boleto" name="paymentMethod" type="checkbox" 
-                        class="form-check-input" required="">
-                    <label class="form-check-label" for="boleto">Boleto</label>
-                </div>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Total</span>
+                        <strong>
+                            @($"{(ShoppingCart != null ? ShoppingCart.ProductsInCart.Sum(p => p.Concentrations.Any() ? p.Concentrations.Sum(c => c.SellingPrice * (decimal)c.Quantity) : p.SellingPrice * p.Quantity) : 0)} R$")
+                        </strong>
+                    </li>
+                </ul>
             </div>
-            <h4 class="mb-3">Endereço de Cobrança</h4>
-                <div class="row g-3">
-                    <div class="col-sm-6">
-                        <label for="cpfCnpj" class="form-label">CNPJ ou CPF</label>
-                        <input disabled value="@(PaymentVM.CpfCnpj)" type="text" class="@(cpfCnpjCssClasses)" id="cpfCnpj" required>
-                        <div class="invalid-feedback">
-                            Digite um número de documento válido.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-sm-6">
-                        <label for="firstName" class="form-label">Nome no Boleto</label>
-                        <input disabled value="@(PaymentVM.Name)" type="text" 
-                            class="@(nameInDocumentCssClasses)" id="firstName" placeholder="" required="">
-                        <div class="invalid-feedback">
-                            Digite um nome válido.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-sm-3">
-                        <label for="zip" class="form-label">CEP</label>
-                        <input disabled value="@(PaymentVM.BillingAddress.Cep)" type="string" 
-                            class="@(cepBillingAddressCssClasses)" id="zip" placeholder="" required="">
-                        <div class="invalid-feedback">
-                        Informe um CEP válido.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-
-                    <div class="col-sm-12">
-                        <label for="email" class="form-label">E-mail <span class="text-muted">(E-mail que receberá o boleto)</span></label>
-                        <input disabled value="@(PaymentVM.Email)" type="email" 
-                            class="@(emailCssClasses)" id="email" placeholder="email@exemplo.com">
-                        <div class="invalid-feedback">
-                        E-mail onde as informações relativas a compra serão enviadas.
-                        </div>
-                    </div>
-
-                    <div class="col-sm-8">
-                        <label for="streetBillingAddress" class="form-label">Rua</label>
-                        <input disabled @bind="PaymentVM.BillingAddress.Street" type="text" class="form-control" 
-                            id="streetBillingAddress" placeholder="" required="">
-                    </div>
-
-                    <div class="col-sm-4">
-                        <label for="numeroBillingAddress" class="form-label">Número</label>
-                        <input disabled value="@(PaymentVM.BillingAddress.Number)" 
-                            type="text" class="@(numberBillingAddressCssClasses)" 
-                            id="numeroBillingAddress" placeholder="" required="">
-                        <div class="invalid-feedback">
-                        Por favor, informe um número de rua válido.
-                        </div>
-                    </div>
-
-                    <div class="col-sm-6">
-                        <label for="complementBillingAddress" class="form-label">Complemento <span class="text-muted">(Optional)</span></label>
-                        <input disabled @bind="PaymentVM.BillingAddress.Complement" type="text" class="form-control" 
-                            id="complementBillingAddress" placeholder="Apart...">
-                    </div>
-
-                    <div class="col-sm-6">
-                        <label for="districtBillingAddress" class="form-label">Bairro</label>
-                        <input disabled @bind="PaymentVM.BillingAddress.District" type="text" class="form-control" 
-                            id="districtBillingAddress" placeholder="">
-                    </div>
-
-                    <div class="col-sm-4">
-                        <label for="cityBillingAddress" class="form-label">Cidade</label>
-                        <input disabled @bind="PaymentVM.BillingAddress.City" type="text" class="form-control" 
-                            id="cityBillingAddress" placeholder="" required=""/>
-                    </div>
-
-                    <div class="col-sm-4">
-                        <label for="stateBillingAddress" class="form-label">Estado</label>
-                        <input disabled @bind="PaymentVM.BillingAddress.State" type="text" class="form-control" 
-                            id="BillingAddress" placeholder="" required=""/>
-                    </div>
-                </div>
-
+        
+            <div class="col-md-7 col-lg-8">
                 <hr class="my-4">
-
-                <div class="form-check">
-                    <input disabled @bind="PaymentVM.BillingEqualShippingAddress" type="checkbox" 
-                        class="form-check-input" id="same-address" />
-                    <label class="form-check-label" for="same-address">Endereço de cobrança é igual ao endereço de entrega</label>
+                <h4 class="mb-3">Método de Pagamento</h4>
+                <div class="my-3">
+                    <div class="form-check">
+                        <input disabled @bind="PaymentVM.Boleto" id="boleto" name="paymentMethod" type="checkbox" 
+                            class="form-check-input" required="">
+                        <label class="form-check-label" for="boleto">Boleto</label>
+                    </div>
                 </div>
+                <h4 class="mb-3">Endereço de Cobrança</h4>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label for="cpfCnpj" class="form-label">CNPJ ou CPF</label>
+                            <input disabled value="@(PaymentVM.CpfCnpj)" type="text" class="@(cpfCnpjCssClasses)" id="cpfCnpj" required>
+                            <div class="invalid-feedback">
+                                Digite um número de documento válido.
+                            </div>
+                        </div>
+                    </div>
 
-                <hr class="my-4">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label for="firstName" class="form-label">Nome no Boleto</label>
+                            <input disabled value="@(PaymentVM.Name)" type="text" 
+                                class="@(nameInDocumentCssClasses)" id="firstName" placeholder="" required="">
+                            <div class="invalid-feedback">
+                                Digite um nome válido.
+                            </div>
+                        </div>
+                    </div>
 
-            @if (!PaymentVM.BillingEqualShippingAddress)
-            {
-                <h4 class="mb-3">Endereço de Entrega</h4>
                     <div class="row">
                         <div class="col-sm-3">
-                            <label for="cepShippimentAddress" class="form-label">CEP</label>
-                            <input disabled value="@(PaymentVM.ShippimentAddress.Cep)" type="number" 
-                                class="@(cepShippimentAddressCssClasses)" id="cepShippimentAddress" required="">
+                            <label for="zip" class="form-label">CEP</label>
+                            <input disabled value="@(PaymentVM.BillingAddress.Cep)" type="string" 
+                                class="@(cepBillingAddressCssClasses)" id="zip" placeholder="" required="">
                             <div class="invalid-feedback">
                             Informe um CEP válido.
                             </div>
                         </div>
                     </div>
+
                     <div class="row">
+
+                        <div class="col-sm-12">
+                            <label for="email" class="form-label">E-mail <span class="text-muted">(E-mail que receberá o boleto)</span></label>
+                            <input disabled value="@(PaymentVM.Email)" type="email" 
+                                class="@(emailCssClasses)" id="email" placeholder="email@exemplo.com">
+                            <div class="invalid-feedback">
+                            E-mail onde as informações relativas a compra serão enviadas.
+                            </div>
+                        </div>
+
                         <div class="col-sm-8">
-                            <label for="streetShippimentAddress" class="form-label">Rua</label>
-                            <input disabled @bind="PaymentVM.ShippimentAddress.Street" type="text" class="form-control" 
-                                id="streetShippimentAddress" required="">
+                            <label for="streetBillingAddress" class="form-label">Rua</label>
+                            <input disabled @bind="PaymentVM.BillingAddress.Street" type="text" class="form-control" 
+                                id="streetBillingAddress" placeholder="" required="">
                         </div>
 
                         <div class="col-sm-4">
-                            <label for="numberShippimentAddress" class="form-label">Número</label>
-                            <input disabled @bind="PaymentVM.ShippimentAddress.Number" type="text" 
-                                class="@(numberShippimentAddressCssClasses)" id="numberShippimentAddress" required="">
+                            <label for="numeroBillingAddress" class="form-label">Número</label>
+                            <input disabled value="@(PaymentVM.BillingAddress.Number)" 
+                                type="text" class="@(numberBillingAddressCssClasses)" 
+                                id="numeroBillingAddress" placeholder="" required="">
                             <div class="invalid-feedback">
                             Por favor, informe um número de rua válido.
                             </div>
                         </div>
 
                         <div class="col-sm-6">
-                            <label for="complementShippimentAddress" class="form-label">Complemento <span class="text-muted">(Optional)</span></label>
-                            <input disabled @bind="PaymentVM.ShippimentAddress.Complement" type="text" 
-                                class="form-control" placeholder="Apart..." id="complementShippimentAddress">
+                            <label for="complementBillingAddress" class="form-label">Complemento <span class="text-muted">(Optional)</span></label>
+                            <input disabled @bind="PaymentVM.BillingAddress.Complement" type="text" class="form-control" 
+                                id="complementBillingAddress" placeholder="Apart...">
                         </div>
 
                         <div class="col-sm-6">
-                            <label for="districtShippimentAddress" class="form-label">Bairro</label>
-                            <input disabled @bind="PaymentVM.ShippimentAddress.District" type="text" class="form-control" 
-                                id="districtShippimentAddress">
+                            <label for="districtBillingAddress" class="form-label">Bairro</label>
+                            <input disabled @bind="PaymentVM.BillingAddress.District" type="text" class="form-control" 
+                                id="districtBillingAddress" placeholder="">
                         </div>
 
                         <div class="col-sm-4">
-                            <label for="cityShippimentAddress" class="form-label">Cidade</label>
-                            <input disabled @bind="PaymentVM.ShippimentAddress.City" type="text" class="form-control" 
-                                id="cityShippimentAddress" required=""/>
+                            <label for="cityBillingAddress" class="form-label">Cidade</label>
+                            <input disabled @bind="PaymentVM.BillingAddress.City" type="text" class="form-control" 
+                                id="cityBillingAddress" placeholder="" required=""/>
                         </div>
 
                         <div class="col-sm-4">
-                            <label for="stateShippimentAddress" class="form-label">Estado</label>
-                            <input disabled @bind="PaymentVM.ShippimentAddress.State" type="text" class="form-control" 
-                                id="stateShippimentAddress" required=""/>
+                            <label for="stateBillingAddress" class="form-label">Estado</label>
+                            <input disabled @bind="PaymentVM.BillingAddress.State" type="text" class="form-control" 
+                                id="BillingAddress" placeholder="" required=""/>
                         </div>
                     </div>
 
                     <hr class="my-4">
+
+                    <div class="form-check">
+                        <input disabled @bind="PaymentVM.BillingEqualShippingAddress" type="checkbox" 
+                            class="form-check-input" id="same-address" />
+                        <label class="form-check-label" for="same-address">Endereço de cobrança é igual ao endereço de entrega</label>
+                    </div>
+
+                    <hr class="my-4">
+
+                @if (!PaymentVM.BillingEqualShippingAddress)
+                {
+                    <h4 class="mb-3">Endereço de Entrega</h4>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <label for="cepShippimentAddress" class="form-label">CEP</label>
+                                <input disabled value="@(PaymentVM.ShippimentAddress.Cep)" type="number" 
+                                    class="@(cepShippimentAddressCssClasses)" id="cepShippimentAddress" required="">
+                                <div class="invalid-feedback">
+                                Informe um CEP válido.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <label for="streetShippimentAddress" class="form-label">Rua</label>
+                                <input disabled @bind="PaymentVM.ShippimentAddress.Street" type="text" class="form-control" 
+                                    id="streetShippimentAddress" required="">
+                            </div>
+
+                            <div class="col-sm-4">
+                                <label for="numberShippimentAddress" class="form-label">Número</label>
+                                <input disabled @bind="PaymentVM.ShippimentAddress.Number" type="text" 
+                                    class="@(numberShippimentAddressCssClasses)" id="numberShippimentAddress" required="">
+                                <div class="invalid-feedback">
+                                Por favor, informe um número de rua válido.
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <label for="complementShippimentAddress" class="form-label">Complemento <span class="text-muted">(Optional)</span></label>
+                                <input disabled @bind="PaymentVM.ShippimentAddress.Complement" type="text" 
+                                    class="form-control" placeholder="Apart..." id="complementShippimentAddress">
+                            </div>
+
+                            <div class="col-sm-6">
+                                <label for="districtShippimentAddress" class="form-label">Bairro</label>
+                                <input disabled @bind="PaymentVM.ShippimentAddress.District" type="text" class="form-control" 
+                                    id="districtShippimentAddress">
+                            </div>
+
+                            <div class="col-sm-4">
+                                <label for="cityShippimentAddress" class="form-label">Cidade</label>
+                                <input disabled @bind="PaymentVM.ShippimentAddress.City" type="text" class="form-control" 
+                                    id="cityShippimentAddress" required=""/>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <label for="stateShippimentAddress" class="form-label">Estado</label>
+                                <input disabled @bind="PaymentVM.ShippimentAddress.State" type="text" class="form-control" 
+                                    id="stateShippimentAddress" required=""/>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                }
+                    <button @onclick="(args) => NavigateToPaymentCreation()" class="btn btn-secondary btn-lg">
+                        Voltar
+                    </button>
+                    <button @onclick="async (args) => await CreateNewPayment(args)" class="btn btn-primary btn-lg float-end">
+                        Confirmar o Pagamento
+                    </button>
+                </div>
             }
-                <button @onclick="(args) => NavigateToPaymentCreation()" class="btn btn-secondary btn-lg">
-                    Voltar
-                </button>
-                <button @onclick="async (args) => await CreateNewPayment(args)" class="btn btn-primary btn-lg float-end">
-                    Confirmar o Pagamento
-                </button>
-            </div>
-        }
-        else
-        {
-            <h6>Erro ao gerar o pagamento.</h6> 
-            <h6>Retorne a página anterior!</h6>
-        }
-    </div>
+            else
+            {
+                <h6>Erro ao gerar o pagamento.</h6> 
+                <h6>Retorne a página anterior!</h6>
+            }
+        </div>
+    }
 }
 else
 {
@@ -255,6 +264,7 @@ else
 }
 
 @code {
+    public bool IsLoading { get; set; } = false;
     public bool? IsAuthenticated { get; set; } = false;
     [Parameter]
     public PaymentRequestVM PaymentVM { get; set; }
@@ -301,6 +311,7 @@ else
 
     async Task CreateNewPayment(MouseEventArgs args)
     {
+        IsLoading = true;
         try
         {
             var paymentResponse = await _paymentServices.CreateNewPayment(PaymentVM);
@@ -326,5 +337,6 @@ else
             };
             _notificationService.Notify(message);
         }
+        IsLoading = true;
     }
 }
